@@ -15,6 +15,7 @@ import TitleDetail from "./pages/TitleDetail";
 import Player from "./pages/Player";
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/player/:id" element={<Player />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/referrals" element={<Referrals />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
