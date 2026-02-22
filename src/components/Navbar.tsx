@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Bell, User, ChevronDown } from "lucide-react";
+import { Search, Bell, User, ChevronDown, Shield } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useAdmin } from "@/hooks/use-admin";
 import logoHorizontal from "@/assets/logo-horizontal.jpg";
 import { useState } from "react";
 
@@ -15,6 +16,7 @@ const navItems = [
 export default function Navbar() {
   const { pathname } = useLocation();
   const { isLoggedIn, wallet, freeCredits, username, logout } = useStore();
+  const { isAdmin } = useAdmin();
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -107,6 +109,11 @@ export default function Navbar() {
                 <div className="absolute right-0 top-10 bg-card border border-border rounded-md py-2 min-w-[160px] hidden group-hover:block">
                   <Link to="/wallet" className="block px-4 py-2 text-sm text-foreground hover:bg-secondary">Wallet</Link>
                   <Link to="/referrals" className="block px-4 py-2 text-sm text-foreground hover:bg-secondary">Referrals</Link>
+                  {isAdmin && (
+                    <Link to="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-primary hover:bg-secondary">
+                      <Shield className="w-3 h-3" /> Admin Panel
+                    </Link>
+                  )}
                   <button onClick={logout} className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Sign Out</button>
                 </div>
               </div>
