@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author: string
+          content: string
+          cover_image: string
+          created_at: string
+          excerpt: string
+          id: string
+          published: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          content?: string
+          cover_image?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          published?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          cover_image?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          published?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -60,18 +99,27 @@ export type Database = {
           created_at: string
           description: string
           duration: string
+          episode: number
           genre: string
           id: string
+          is_coming_soon: boolean
           is_free: boolean
+          is_series: boolean
           is_vj: boolean
           language: string
           price: number
           rating: string
+          row: string
+          season: number
+          series_id: string | null
           status: string
           thumbnail: string
+          thumbnail_url: string
           title: string
           updated_at: string
           video_url: string
+          views: number
+          vj_narrator: string
           year: number
         }
         Insert: {
@@ -80,18 +128,27 @@ export type Database = {
           created_at?: string
           description?: string
           duration?: string
+          episode?: number
           genre?: string
           id?: string
+          is_coming_soon?: boolean
           is_free?: boolean
+          is_series?: boolean
           is_vj?: boolean
           language?: string
           price?: number
           rating?: string
+          row?: string
+          season?: number
+          series_id?: string | null
           status?: string
           thumbnail?: string
+          thumbnail_url?: string
           title: string
           updated_at?: string
           video_url?: string
+          views?: number
+          vj_narrator?: string
           year?: number
         }
         Update: {
@@ -100,21 +157,38 @@ export type Database = {
           created_at?: string
           description?: string
           duration?: string
+          episode?: number
           genre?: string
           id?: string
+          is_coming_soon?: boolean
           is_free?: boolean
+          is_series?: boolean
           is_vj?: boolean
           language?: string
           price?: number
           rating?: string
+          row?: string
+          season?: number
+          series_id?: string | null
           status?: string
           thumbnail?: string
+          thumbnail_url?: string
           title?: string
           updated_at?: string
           video_url?: string
+          views?: number
+          vj_narrator?: string
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "titles_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "titles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
