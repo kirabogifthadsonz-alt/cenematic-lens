@@ -34,7 +34,7 @@ export function useTitles() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const getByRow = (row: string) => titles.filter(t => t.row === row && t.status === "live" && !t.series_id);
+  const getByRow = (row: string) => titles.filter(t => t.row.toLowerCase() === row.toLowerCase() && t.status === "live" && !t.series_id);
   const getByCategory = (cat: string) => titles.filter(t => t.category.includes(cat) && t.status === "live" && !t.series_id);
   const getTrending = () => [...titles].filter(t => t.status === "live" && !t.series_id).sort((a, b) => b.views - a.views).slice(0, 10);
   const getVJ = () => titles.filter(t => t.is_vj && t.status === "live" && !t.series_id);
