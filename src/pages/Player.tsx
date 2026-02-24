@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useTitles } from "@/hooks/use-titles";
 import { useStore } from "@/lib/store";
-import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack, Subtitles, Settings, Loader2 } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack, Subtitles, Settings, Loader2, RefreshCw } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 export default function Player() {
   const { id } = useParams();
@@ -16,30 +16,70 @@ export default function Player() {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [showControls, setShowControls] = useState(true);
-  const [videoError, setVideoError] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const hideTimer = useRef<number>(0);
 
   const title = getById(id || "");
 
+  const videoUrl = title?.video_url || "";
+
+  // Build a working src — try removing crossOrigin for external hosts
+  const isExternalUrl = videoUrl.startsWith("http");
+  const isSameOrigin = videoUrl.startsWith("/") || videoUrl.startsWith(window.location.origin);
+
+  const getErrorMessage = useCallback((code: number | undefined) => {
+    switch (code) {
+      case 1: return "Video loading was aborted.";
+      case 2: return "A network error prevented the video from loading. The server may not allow direct playback (CORS).";
+      case 3: return "The video format is not supported by your browser.";
+      case 4: return "The video URL is not accessible or the format is unsupported.";
+      default: return "Unable to play this video. The link may be broken or the server may block direct playback.";
+    }
+  }, []);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    // Reset error on new title
+    setVideoError(null);
+    setRetryCount(0);
+
     const onTime = () => {
       setCurrentTime(v.currentTime);
       setProgress((v.currentTime / v.duration) * 100);
     };
     const onMeta = () => setDuration(v.duration);
-    const onError = () => setVideoError(true);
+    const onError = () => {
+      const code = v.error?.code;
+      setVideoError(getErrorMessage(code));
+    };
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("loadedmetadata", onMeta);
     v.addEventListener("error", onError);
-    return () => { v.removeEventListener("timeupdate", onTime); v.removeEventListener("loadedmetadata", onMeta); v.removeEventListener("error", onError); };
-  }, [title]);
+    v.addEventListener("play", onPlay);
+    v.addEventListener("pause", onPause);
+    return () => {
+      v.removeEventListener("timeupdate", onTime);
+      v.removeEventListener("loadedmetadata", onMeta);
+      v.removeEventListener("error", onError);
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("pause", onPause);
+    };
+  }, [title, retryCount, getErrorMessage]);
+
+  const handleRetry = () => {
+    setVideoError(null);
+    setRetryCount(c => c + 1);
+  };
 
   const togglePlay = () => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); } else { v.pause(); setPlaying(false); }
+    if (v.paused) { v.play(); } else { v.pause(); }
   };
 
   const skip = (s: number) => {
@@ -75,24 +115,34 @@ export default function Player() {
       style={{ cursor: showControls ? "default" : "none" }}
     >
       {videoError ? (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-          <p className="text-foreground text-lg">Unable to play this video</p>
-          <p className="text-muted-foreground text-sm max-w-md text-center">The video URL may not be accessible. Try a direct MP4 link.</p>
-          <button onClick={() => navigate(-1)} className="bg-primary text-primary-foreground px-6 py-2 rounded font-semibold">Go Back</button>
+        <div className="w-full h-full flex flex-col items-center justify-center gap-4 px-6" onClick={e => e.stopPropagation()}>
+          <p className="text-foreground text-lg font-semibold">Playback Error</p>
+          <p className="text-muted-foreground text-sm max-w-md text-center">{videoError}</p>
+          <p className="text-muted-foreground text-xs max-w-md text-center">
+            URL: <span className="break-all text-foreground/60">{videoUrl.slice(0, 80)}…</span>
+          </p>
+          <div className="flex gap-3 mt-2">
+            <button onClick={handleRetry} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2 rounded font-semibold">
+              <RefreshCw className="w-4 h-4" /> Retry
+            </button>
+            <button onClick={() => navigate(-1)} className="bg-secondary text-foreground px-5 py-2 rounded font-semibold">Go Back</button>
+          </div>
         </div>
       ) : (
         <video
+          key={`${videoUrl}-${retryCount}`}
           ref={videoRef}
           autoPlay
           muted={muted}
+          playsInline
           className="w-full h-full object-contain"
-          src={title.video_url}
-          crossOrigin="anonymous"
+          src={videoUrl}
+          {...(!isExternalUrl || isSameOrigin ? { crossOrigin: "anonymous" as const } : {})}
         />
       )}
 
       {/* Top bar */}
-      <div className={`absolute top-0 left-0 right-0 gradient-cinema-top px-4 md:px-8 py-4 flex items-center justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+      <div className={`absolute top-0 left-0 right-0 gradient-cinema-top px-4 md:px-8 py-4 flex items-center justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-4">
@@ -106,7 +156,7 @@ export default function Player() {
 
       {/* Bottom controls */}
       {!videoError && (
-        <div className={`absolute bottom-0 left-0 right-0 gradient-cinema px-4 md:px-8 pb-6 pt-20 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+        <div className={`absolute bottom-0 left-0 right-0 gradient-cinema px-4 md:px-8 pb-6 pt-20 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           onClick={e => e.stopPropagation()}
         >
           <div className="w-full h-1 bg-muted rounded-full mb-4 cursor-pointer group" onClick={seek}>
