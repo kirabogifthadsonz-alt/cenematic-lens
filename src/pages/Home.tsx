@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Play, Info, Loader2 } from "lucide-react";
+import { Play, Info } from "lucide-react";
 import ContentRow from "@/components/ContentRow";
-import { useTitles } from "@/hooks/use-titles";
+import { supabase } from "@/integrations/supabase/client";
+import { mapDbTitle, Title } from "@/lib/content-data";
 
 const ROWS = [
   { key: "trending", label: "🔥 Trending Now", useTrending: true },
-  { key: "coming-soon", label: "🎬 Coming Soon", category: "coming-soon", useComingSoon: true },
+  { key: "coming-soon", label: "🎬 Coming Soon", useComingSoon: true },
   { key: "new-release", label: "🆕 New Release", row: "New Release" },
   { key: "originals", label: "🎬 Cinematic Lens Original", row: "Cinematic Lens Original" },
   { key: "ugawood", label: "🇺🇬 Ugawood Hits", row: "Ugawood Hits" },
@@ -17,11 +18,49 @@ const ROWS = [
 ];
 
 export default function Home() {
-  const { titles, loading, getTrending, getByCategory, getByRow, getFree, getSeriesMain } = useTitles();
+  const [titles, setTitles] = useState<Title[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
 
-  const liveItems = titles.filter(t => t.status === "live" && !t.series_id);
-  const heroTitles = liveItems.filter(t => t.thumbnail_url).slice(0, 5);
+  useEffect(() => {
+    let timeout: number;
+
+    const fetchData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("titles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Supabase fetch error:", error);
+          setTitles([]);
+        } else {
+          setTitles((data || []).map(mapDbTitle));
+        }
+      } catch (err) {
+        console.error("Fetch failed:", err);
+        setTitles([]);
+      }
+      setLoaded(true);
+    };
+
+    // Hard 3-second timeout
+    timeout = window.setTimeout(() => {
+      if (!loaded) {
+        console.error("Fetch timed out after 3 seconds");
+        setTitles([]);
+        setLoaded(true);
+      }
+    }, 3000);
+
+    fetchData();
+
+    return () => clearTimeout(timeout);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const live = titles.filter(t => t.status === "live" && !t.series_id);
+  const heroTitles = live.filter(t => t.thumbnail_url).slice(0, 5);
   const hero = heroTitles[heroIdx];
 
   useEffect(() => {
@@ -30,33 +69,40 @@ export default function Home() {
     return () => clearInterval(t);
   }, [heroTitles.length]);
 
-  if (loading) {
+  const getRowItems = (row: typeof ROWS[number]) => {
+    const liveTitles = titles.filter(t => t.status === "live" && !t.series_id);
+    if (row.useTrending) return [...liveTitles].sort((a, b) => b.views - a.views).slice(0, 10);
+    if (row.useComingSoon) return titles.filter(t => t.is_coming_soon && t.status === "live" && !t.series_id);
+    if (row.useSeries) return titles.filter(t => t.is_series && !t.series_id && t.status === "live");
+    if (row.useFree) return liveTitles.filter(t => t.is_free);
+    if (row.row) return liveTitles.filter(t => t.row.toLowerCase() === row.row!.toLowerCase());
+    return [];
+  };
+
+  // No spinner — show content or empty state immediately once loaded
+  if (loaded && titles.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="bg-background min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-foreground text-lg font-semibold mb-2">No movies yet.</p>
+          <p className="text-muted-foreground">Go to Admin panel and upload your first movie.</p>
+          <Link to="/admin" className="inline-block mt-4 bg-primary text-primary-foreground px-6 py-2 rounded font-semibold hover:bg-primary/90 transition">
+            Open Admin
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const getRowItems = (row: typeof ROWS[number]) => {
-    if (row.useTrending) return getTrending();
-    if (row.useComingSoon) return titles.filter(t => t.is_coming_soon && t.status === "live" && !t.series_id);
-    if (row.useSeries) return getSeriesMain();
-    if (row.useFree) return getFree();
-    if (row.row) return getByRow(row.row);
-    if (row.category) return getByCategory(row.category);
-    return [];
-  };
+  // Brief blank screen while fetching (max 3s), no spinner
+  if (!loaded) return <div className="bg-background min-h-screen" />;
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Hero — static image only, no autoplay video */}
       {hero ? (
         <div className="relative h-[70vh] md:h-[85vh]">
           <div className="absolute inset-0 bg-secondary">
-            {hero.thumbnail_url ? (
-              <img src={hero.thumbnail_url} alt={hero.title} className="w-full h-full object-cover opacity-60" />
-            ) : null}
+            {hero.thumbnail_url && <img src={hero.thumbnail_url} alt={hero.title} className="w-full h-full object-cover opacity-60" />}
           </div>
           <div className="absolute inset-0 gradient-cinema" />
           <div className="absolute bottom-[15%] md:bottom-[20%] left-4 md:left-12 z-10 max-w-lg">
@@ -77,13 +123,8 @@ export default function Home() {
             ))}
           </div>
         </div>
-      ) : (
-        <div className="h-[50vh] flex items-center justify-center">
-          <p className="text-muted-foreground text-lg">No content yet. Upload movies from the admin panel.</p>
-        </div>
-      )}
+      ) : null}
 
-      {/* Rows */}
       <div className={hero ? "-mt-20 relative z-10 pb-20" : "pb-20 pt-20"}>
         {ROWS.map(row => (
           <ContentRow key={row.key} title={row.label} items={getRowItems(row)} />
