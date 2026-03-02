@@ -1,9 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { Search, Bell, User, ChevronDown, Shield } from "lucide-react";
+import { useStore } from "@/lib/store";
 import { useAdmin } from "@/hooks/use-admin";
-import { supabase } from "@/integrations/supabase/client";
 import logoHorizontal from "@/assets/logo-horizontal.jpg";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const navItems = [
   { label: "Home", path: "/home" },
@@ -15,43 +15,11 @@ const navItems = [
 
 export default function Navbar() {
   const { pathname } = useLocation();
+  const { isLoggedIn, wallet, freeCredits, username, logout } = useStore();
   const { isAdmin } = useAdmin();
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        const { data } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
-        setProfile(data);
-      } else {
-        setProfile(null);
-      }
-    });
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        const { data } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
-        setProfile(data);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const isLoggedIn = !!user;
-  const username = profile?.username || user?.email?.split("@")[0] || "U";
-  const wallet = profile?.wallet || 0;
-  const freeCredits = profile?.free_credits || 0;
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 gradient-cinema-top">
@@ -64,21 +32,35 @@ export default function Navbar() {
             <>
               <div className="hidden md:flex items-center gap-5">
                 {navItems.map(item => (
-                  <Link key={item.path} to={item.path}
-                    className={`text-sm font-medium transition-colors hover:text-foreground ${pathname === item.path ? "text-foreground" : "text-muted-foreground"}`}>
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`text-sm font-medium transition-colors hover:text-foreground ${
+                      pathname === item.path ? "text-foreground" : "text-muted-foreground"
+                    }`}
+                  >
                     {item.label}
                   </Link>
                 ))}
               </div>
               <div className="md:hidden relative">
-                <button onClick={() => setShowMenu(!showMenu)} className="flex items-center gap-1 text-sm text-foreground">
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-1 text-sm text-foreground"
+                >
                   Browse <ChevronDown className="w-4 h-4" />
                 </button>
                 {showMenu && (
                   <div className="absolute top-8 left-0 bg-card border border-border rounded-md py-2 min-w-[150px]">
                     {navItems.map(item => (
-                      <Link key={item.path} to={item.path} onClick={() => setShowMenu(false)}
-                        className={`block px-4 py-2 text-sm hover:bg-secondary ${pathname === item.path ? "text-foreground" : "text-muted-foreground"}`}>
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setShowMenu(false)}
+                        className={`block px-4 py-2 text-sm hover:bg-secondary ${
+                          pathname === item.path ? "text-foreground" : "text-muted-foreground"
+                        }`}
+                      >
                         {item.label}
                       </Link>
                     ))}
@@ -90,22 +72,30 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 md:gap-5">
-          {isLoggedIn ? (
+          {isLoggedIn && (
             <>
               {showSearch ? (
                 <div className="flex items-center bg-card border border-border rounded px-2">
                   <Search className="w-4 h-4 text-muted-foreground" />
-                  <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Titles, people, genres"
                     className="bg-transparent border-none outline-none text-sm px-2 py-1 w-32 md:w-48 text-foreground placeholder:text-muted-foreground"
-                    autoFocus onBlur={() => !searchQuery && setShowSearch(false)} />
+                    autoFocus
+                    onBlur={() => !searchQuery && setShowSearch(false)}
+                  />
                 </div>
               ) : (
-                <button onClick={() => setShowSearch(true)}><Search className="w-5 h-5 text-foreground" /></button>
+                <button onClick={() => setShowSearch(true)}>
+                  <Search className="w-5 h-5 text-foreground" />
+                </button>
               )}
               <Bell className="w-5 h-5 text-foreground hidden md:block" />
-              <Link to="/wallet"
-                className="flex items-center gap-1 bg-primary/20 border border-primary/40 rounded-full px-3 py-1 text-xs font-semibold text-primary">
+              <Link
+                to="/wallet"
+                className="flex items-center gap-1 bg-primary/20 border border-primary/40 rounded-full px-3 py-1 text-xs font-semibold text-primary"
+              >
                 {freeCredits > 0 && <span>{freeCredits} free •</span>}
                 <span>UGX {wallet.toLocaleString()}</span>
               </Link>
@@ -124,11 +114,12 @@ export default function Navbar() {
                       <Shield className="w-3 h-3" /> Admin Panel
                     </Link>
                   )}
-                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Sign Out</button>
+                  <button onClick={logout} className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Sign Out</button>
                 </div>
               </div>
             </>
-          ) : (
+          )}
+          {!isLoggedIn && (
             <Link to="/login" className="bg-primary text-primary-foreground px-4 py-1.5 rounded text-sm font-semibold hover:bg-primary/90 transition">
               Sign In
             </Link>

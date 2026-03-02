@@ -6,22 +6,22 @@ import { useTitles } from "@/hooks/use-titles";
 
 const ROWS = [
   { key: "trending", label: "🔥 Trending Now", useTrending: true },
-  { key: "coming-soon", label: "🎬 Coming Soon", category: "coming-soon", useComingSoon: true },
-  { key: "new-release", label: "🆕 New Release", row: "New Release" },
-  { key: "originals", label: "🎬 Cinematic Lens Original", row: "Cinematic Lens Original" },
-  { key: "ugawood", label: "🇺🇬 Ugawood Hits", row: "Ugawood Hits" },
-  { key: "series", label: "📺 Series", useSeries: true },
-  { key: "nollywood", label: "🇳🇬 Nollywood", row: "Nollywood" },
-  { key: "kids", label: "👶 Kids and Family", row: "Kids and Family" },
+  { key: "originals", label: "🎬 Cinematic Lens Originals", category: "originals" },
+  { key: "vjs", label: "🎤 VJ Bangers", useVJ: true },
+  { key: "luganda", label: "🇺🇬 Luganda Hits", category: "luganda" },
+  { key: "nollywood", label: "🇳🇬 Nollywood", category: "nollywood" },
+  { key: "kids", label: "👶 For Kids", category: "kids" },
+  { key: "new", label: "🆕 New Releases", category: "new" },
+  { key: "action", label: "💥 Action & Thriller", category: "action" },
   { key: "free", label: "🆓 Watch Free", useFree: true },
 ];
 
 export default function Home() {
-  const { titles, loading, getTrending, getByCategory, getByRow, getFree, getSeriesMain } = useTitles();
+  const { titles, loading, getTrending, getByCategory, getVJ, getFree, getByRow } = useTitles();
   const [heroIdx, setHeroIdx] = useState(0);
 
   const liveItems = titles.filter(t => t.status === "live" && !t.series_id);
-  const heroTitles = liveItems.filter(t => t.thumbnail_url).slice(0, 5);
+  const heroTitles = liveItems.slice(0, 5);
   const hero = heroTitles[heroIdx];
 
   useEffect(() => {
@@ -40,21 +40,21 @@ export default function Home() {
 
   const getRowItems = (row: typeof ROWS[number]) => {
     if (row.useTrending) return getTrending();
-    if (row.useComingSoon) return titles.filter(t => t.is_coming_soon && t.status === "live" && !t.series_id);
-    if (row.useSeries) return getSeriesMain();
+    if (row.useVJ) return getVJ().slice(0, 10);
     if (row.useFree) return getFree();
-    if (row.row) return getByRow(row.row);
     if (row.category) return getByCategory(row.category);
-    return [];
+    return getByRow(row.key);
   };
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Hero — static image only, no autoplay video */}
+      {/* Hero */}
       {hero ? (
         <div className="relative h-[70vh] md:h-[85vh]">
           <div className="absolute inset-0 bg-secondary">
-            {hero.thumbnail_url ? (
+            {hero.video_url ? (
+              <video key={hero.id} autoPlay muted className="w-full h-full object-cover opacity-60" src={hero.video_url} />
+            ) : hero.thumbnail_url ? (
               <img src={hero.thumbnail_url} alt={hero.title} className="w-full h-full object-cover opacity-60" />
             ) : null}
           </div>

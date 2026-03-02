@@ -26,11 +26,10 @@ export default function ContentRow({ title: rowTitle, items }: { title: string; 
                   <span className="text-display text-lg md:text-xl text-muted-foreground text-center px-2 leading-tight">{item.title}</span>
                 </div>
               )}
-              {/* Price badge — dynamic from DB */}
-              {!item.is_free && (
-                <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded shadow"
-                  style={{ background: "linear-gradient(135deg, #FFD700, hsl(357 93% 47%))", color: "#fff" }}>
-                  {item.is_series ? "UGX 500 for 2 parts" : `UGX ${item.price.toLocaleString()}`}
+              {/* Price badge for series */}
+              {item.is_series && !item.is_free && (
+                <span className="absolute top-2 left-2 bg-gradient-to-r from-cinema-gold to-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded shadow">
+                  UGX {item.price.toLocaleString()}
                 </span>
               )}
               {item.is_free && (
