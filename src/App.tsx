@@ -12,6 +12,7 @@ import VJs from "./pages/VJs";
 import Movies from "./pages/Movies";
 import NewPopular from "./pages/NewPopular";
 import MyList from "./pages/MyList";
+import History from "./pages/History";
 import TitleDetail from "./pages/TitleDetail";
 import SeriesDetail from "./pages/SeriesDetail";
 import Player from "./pages/Player";
@@ -43,6 +44,7 @@ function AppContent() {
         <Route path="/movies" element={<Movies />} />
         <Route path="/new-popular" element={<NewPopular />} />
         <Route path="/my-list" element={<MyList />} />
+        <Route path="/history" element={<History />} />
         <Route path="/title/:id" element={<TitleDetail />} />
         <Route path="/series/:id" element={<SeriesDetail />} />
         <Route path="/player/:id" element={<Player />} />
