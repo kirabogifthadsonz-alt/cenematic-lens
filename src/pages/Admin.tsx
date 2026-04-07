@@ -5,7 +5,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { Tables } from "@/integrations/supabase/types";
 import {
   LayoutDashboard, Film, Users, Receipt, Share2, BarChart3, Settings,
-  Plus, Pencil, Trash2, LogOut, Loader2,
+  Plus, Pencil, Trash2, LogOut, Loader2, Menu,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
