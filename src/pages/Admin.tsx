@@ -5,7 +5,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { Tables } from "@/integrations/supabase/types";
 import {
   LayoutDashboard, Film, Users, Receipt, Share2, BarChart3, Settings,
-  Plus, Pencil, Trash2, LogOut, Loader2,
+  Plus, Pencil, Trash2, LogOut, Loader2, Menu,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [tab, setTab] = useState<SidebarTab>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Data
   const [titles, setTitles] = useState<DbTitle[]>([]);
@@ -157,16 +158,24 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside className="w-60 bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-40">
-        <div className="p-4 border-b border-border">
-          <img src={logoHorizontal} alt="Cinematic Lens" className="h-8 mb-1" />
-          <p className="text-[10px] text-muted-foreground tracking-wider">ADMIN CONSOLE</p>
+      <aside className={`${sidebarOpen ? "w-60" : "w-14"} bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-40 transition-all duration-300`}>
+        <div className="p-3 border-b border-border flex items-center gap-2">
+          <button onClick={() => setSidebarOpen(o => !o)} className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-secondary transition flex-shrink-0">
+            <Menu className="w-5 h-5" />
+          </button>
+          {sidebarOpen && (
+            <div className="overflow-hidden">
+              <img src={logoHorizontal} alt="Cinematic Lens" className="h-7" />
+              <p className="text-[9px] text-muted-foreground tracking-wider">ADMIN CONSOLE</p>
+            </div>
+          )}
         </div>
-        <nav className="flex-1 p-2 space-y-0.5">
+        <nav className="flex-1 p-1.5 space-y-0.5">
           {sidebarItems.map(item => (
             <button
               key={item.key}
-              onClick={() => setTab(item.key)}
+              onClick={() => { setTab(item.key); setSidebarOpen(false); }}
+              title={item.label}
               className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                 tab === item.key
                   ? "bg-primary text-primary-foreground"
@@ -174,19 +183,20 @@ export default function Admin() {
               }`}
             >
               {item.icon}
-              {item.label}
+              {sidebarOpen && <span>{item.label}</span>}
             </button>
           ))}
         </nav>
-        <div className="p-2 border-t border-border">
-          <button onClick={handleSignOut} className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition">
-            <LogOut className="w-4 h-4" /> Sign Out
+        <div className="p-1.5 border-t border-border">
+          <button onClick={handleSignOut} title="Sign Out" className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition">
+            <LogOut className="w-4 h-4" />
+            {sidebarOpen && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
       {/* Main */}
-      <main className="ml-60 flex-1 p-6 md:p-8">
+      <main className={`${sidebarOpen ? "ml-60" : "ml-14"} flex-1 p-6 md:p-8 transition-all duration-300`}>
         {loadingData ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
