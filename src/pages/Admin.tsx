@@ -38,6 +38,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [tab, setTab] = useState<SidebarTab>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Data
   const [titles, setTitles] = useState<DbTitle[]>([]);
