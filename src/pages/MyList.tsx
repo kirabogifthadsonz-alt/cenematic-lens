@@ -1,10 +1,15 @@
 import ContentRow from "@/components/ContentRow";
-import { titles } from "@/lib/content-data";
+import { useTitles } from "@/hooks/use-titles";
 import { useStore } from "@/lib/store";
 
 export default function MyList() {
   const { myList } = useStore();
+  const { titles, loading } = useTitles();
   const items = titles.filter(t => myList.includes(t.id));
+
+  if (loading) {
+    return <div className="bg-background min-h-screen pt-20 flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  }
 
   return (
     <div className="bg-background min-h-screen pt-20 pb-20">

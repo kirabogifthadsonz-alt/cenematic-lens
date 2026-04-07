@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { Title } from "@/lib/content-data";
+import { Tables } from "@/integrations/supabase/types";
 import { Play, Plus, ThumbsUp } from "lucide-react";
 import { useStore } from "@/lib/store";
 
-export default function ContentRow({ title: rowTitle, items }: { title: string; items: Title[] }) {
+type DbTitle = Tables<"titles">;
+
+export default function ContentRow({ title: rowTitle, items }: { title: string; items: DbTitle[] }) {
   const { addToList } = useStore();
 
   if (items.length === 0) return null;
@@ -19,13 +21,23 @@ export default function ContentRow({ title: rowTitle, items }: { title: string; 
             className="flex-shrink-0 w-[140px] md:w-[220px] group relative rounded-md overflow-hidden bg-card transition-transform duration-300 hover:scale-105 hover:z-10"
           >
             <div className="aspect-[2/3] bg-secondary relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-display text-lg md:text-xl text-muted-foreground text-center px-2 leading-tight">{item.title}</span>
-              </div>
-              {item.isFree && (
+              {item.thumbnail_url ? (
+                <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-display text-lg md:text-xl text-muted-foreground text-center px-2 leading-tight">{item.title}</span>
+                </div>
+              )}
+              {/* Price badge */}
+              {!item.is_free && item.price > 0 && (
+                <span className="absolute top-2 left-2 bg-gradient-to-r from-primary to-yellow-500 text-background text-[10px] font-bold px-2 py-0.5 rounded">
+                  UGX {item.price.toLocaleString()}
+                </span>
+              )}
+              {item.is_free && (
                 <span className="absolute top-2 left-2 bg-cinema-gold text-cinema-gold-foreground text-[10px] font-bold px-2 py-0.5 rounded">FREE</span>
               )}
-              {item.isVJ && (
+              {item.is_vj && (
                 <span className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">VJ</span>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
