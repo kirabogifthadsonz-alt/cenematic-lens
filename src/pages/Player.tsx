@@ -1,12 +1,14 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { getById } from "@/lib/content-data";
+import { useTitles } from "@/hooks/use-titles";
 import { useStore } from "@/lib/store";
-import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack, Subtitles, Settings } from "lucide-react";
+import { detectSource, getPlayableUrl, getGDriveEmbedUrl } from "@/lib/video-utils";
+import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 
 export default function Player() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { getById, loading } = useTitles();
   const title = getById(id || "");
   const { wallet } = useStore();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,7 +18,12 @@ export default function Player() {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [videoError, setVideoError] = useState(false);
   const hideTimer = useRef<number>(0);
+
+  const videoUrl = title ? getPlayableUrl(title.video_url) : "";
+  const source = title ? detectSource(title.video_url) : "unknown";
+  const gdriveEmbed = title && source === "gdrive" ? getGDriveEmbedUrl(title.video_url) : null;
 
   useEffect(() => {
     const v = videoRef.current;
@@ -26,10 +33,16 @@ export default function Player() {
       setProgress((v.currentTime / v.duration) * 100);
     };
     const onMeta = () => setDuration(v.duration);
+    const onError = () => setVideoError(true);
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("loadedmetadata", onMeta);
-    return () => { v.removeEventListener("timeupdate", onTime); v.removeEventListener("loadedmetadata", onMeta); };
-  }, []);
+    v.addEventListener("error", onError);
+    return () => {
+      v.removeEventListener("timeupdate", onTime);
+      v.removeEventListener("loadedmetadata", onMeta);
+      v.removeEventListener("error", onError);
+    };
+  }, [videoUrl]);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -59,24 +72,66 @@ export default function Player() {
     hideTimer.current = window.setTimeout(() => setShowControls(false), 3000);
   };
 
+  if (loading) {
+    return <div className="fixed inset-0 bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  }
+
   if (!title) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Not found</div>;
+
+  // For Google Drive videos that fail direct playback, use iframe embed
+  if ((videoError && gdriveEmbed) || (source === "gdrive" && gdriveEmbed)) {
+    return (
+      <div className="fixed inset-0 bg-background z-50">
+        {/* Top bar */}
+        <div className="absolute top-0 left-0 right-0 z-10 px-4 md:px-8 py-4 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="text-foreground"><ArrowLeft className="w-6 h-6" /></button>
+            <span className="text-sm md:text-base font-medium text-foreground">{title.title}</span>
+          </div>
+          <div className="bg-primary/20 border border-primary/40 rounded-full px-3 py-1 text-xs font-semibold text-primary">
+            UGX {wallet.toLocaleString()}
+          </div>
+        </div>
+        <iframe
+          src={gdriveEmbed}
+          className="w-full h-full border-0"
+          allow="autoplay; encrypted-media; fullscreen"
+          allowFullScreen
+          referrerPolicy="no-referrer"
+        />
+      </div>
+    );
+  }
 
   return (
     <div
-      className="fixed inset-0 bg-background z-50 cursor-none"
+      className="fixed inset-0 bg-background z-50"
       onMouseMove={handleMouseMove}
+      onTouchStart={handleMouseMove}
       onClick={togglePlay}
       style={{ cursor: showControls ? "default" : "none" }}
     >
       <video
         ref={videoRef}
         autoPlay
+        muted={muted}
         className="w-full h-full object-contain"
-        src={title.videoUrl}
+        src={videoUrl}
+        playsInline
       />
 
+      {videoError && !gdriveEmbed && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+          <div className="text-center px-6">
+            <p className="text-foreground text-lg mb-2">Unable to play this video</p>
+            <p className="text-muted-foreground text-sm mb-4">The video source may be unavailable.</p>
+            <button onClick={() => navigate(-1)} className="bg-primary text-primary-foreground px-6 py-2 rounded font-semibold">Go Back</button>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
-      <div className={`absolute top-0 left-0 right-0 gradient-cinema-top px-4 md:px-8 py-4 flex items-center justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+      <div className={`absolute top-0 left-0 right-0 bg-gradient-to-b from-background/80 to-transparent px-4 md:px-8 py-4 flex items-center justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-4">
@@ -89,10 +144,9 @@ export default function Player() {
       </div>
 
       {/* Bottom controls */}
-      <div className={`absolute bottom-0 left-0 right-0 gradient-cinema px-4 md:px-8 pb-6 pt-20 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent px-4 md:px-8 pb-6 pt-20 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={e => e.stopPropagation()}
       >
-        {/* Progress bar */}
         <div className="w-full h-1 bg-muted rounded-full mb-4 cursor-pointer group" onClick={seek}>
           <div className="h-full bg-primary rounded-full relative transition-all" style={{ width: `${progress}%` }}>
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition" />
@@ -109,11 +163,9 @@ export default function Player() {
             <button onClick={() => setMuted(!muted)}>
               {muted ? <VolumeX className="w-5 h-5 text-foreground" /> : <Volume2 className="w-5 h-5 text-foreground" />}
             </button>
-            <span className="text-xs text-muted-foreground">{fmt(currentTime)} / {fmt(duration)}</span>
+            <span className="text-xs text-muted-foreground">{fmt(currentTime)} / {fmt(duration || 0)}</span>
           </div>
           <div className="flex items-center gap-4">
-            <button><Subtitles className="w-5 h-5 text-foreground" /></button>
-            <button><Settings className="w-5 h-5 text-foreground" /></button>
             <button onClick={() => videoRef.current?.requestFullscreen()}>
               <Maximize className="w-5 h-5 text-foreground" />
             </button>
