@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTitles } from "@/hooks/use-titles";
 import { useStore } from "@/lib/store";
 import { detectSource, getPlayableUrl, getGDriveEmbedUrl } from "@/lib/video-utils";
+import TeraboxPlayer from "@/components/TeraboxPlayer";
 import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 
@@ -21,8 +22,8 @@ export default function Player() {
   const [videoError, setVideoError] = useState(false);
   const hideTimer = useRef<number>(0);
 
-  const videoUrl = title ? getPlayableUrl(title.video_url) : "";
   const source = title ? detectSource(title.video_url) : "unknown";
+  const videoUrl = title ? getPlayableUrl(title.video_url) : "";
   const gdriveEmbed = title && source === "gdrive" ? getGDriveEmbedUrl(title.video_url) : null;
 
   useEffect(() => {
@@ -78,11 +79,15 @@ export default function Player() {
 
   if (!title) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Not found</div>;
 
-  // For Google Drive videos that fail direct playback, use iframe embed
+  // === TERABOX: Dedicated iframe player ===
+  if (source === "terabox") {
+    return <TeraboxPlayer url={title.video_url} title={title.title} wallet={wallet} />;
+  }
+
+  // === GOOGLE DRIVE: iframe embed ===
   if ((videoError && gdriveEmbed) || (source === "gdrive" && gdriveEmbed)) {
     return (
       <div className="fixed inset-0 bg-background z-50">
-        {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 z-10 px-4 md:px-8 py-4 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate(-1)} className="text-foreground"><ArrowLeft className="w-6 h-6" /></button>
@@ -103,6 +108,7 @@ export default function Player() {
     );
   }
 
+  // === DIRECT MP4 / DROPBOX: HTML5 video player ===
   return (
     <div
       className="fixed inset-0 bg-background z-50"
