@@ -1,11 +1,12 @@
 // Detect video source type from URL and transform for playback.
 // We hide the actual source from users by proxying through our player.
 
-export type VideoSource = "direct" | "terabox" | "dropbox" | "gdrive" | "unknown";
+export type VideoSource = "direct" | "terabox" | "dropbox" | "gdrive" | "telegram" | "unknown";
 
 export function detectSource(url: string): VideoSource {
   if (!url) return "unknown";
   const lower = url.toLowerCase();
+  if (lower.includes("t.me/") || lower.includes("telegram.me/")) return "telegram";
   if (lower.includes("terabox") || lower.includes("1024tera") || lower.includes("freeterabox") || lower.includes("teraboxapp") || lower.includes("nephobox") || lower.includes("mirrorbox") || lower.includes("mirrobox") || lower.includes("4funbox")) return "terabox";
   if (lower.includes("dropbox.com") || lower.includes("dl.dropboxusercontent")) return "dropbox";
   if (lower.includes("drive.google.com") || lower.includes("docs.google.com")) return "gdrive";
@@ -65,4 +66,24 @@ export function getTeraboxEmbedUrl(url: string): string {
  */
 export function needsIframePlayer(source: VideoSource): boolean {
   return source === "terabox" || source === "gdrive";
+}
+
+/**
+ * Parse Telegram channel URL to extract chat ID and message ID.
+ * Supports: https://t.me/c/CHANNEL_ID/MESSAGE_ID (private channels)
+ *           https://t.me/USERNAME/MESSAGE_ID (public channels)
+ */
+export function parseTelegramUrl(url: string): { chatId: string; messageId: string } | null {
+  // Private channel: t.me/c/CHANNEL_ID/MESSAGE_ID
+  const privateMatch = url.match(/t\.me\/c\/(\d+)\/(\d+)/);
+  if (privateMatch) {
+    // Private channel IDs need -100 prefix for Bot API
+    return { chatId: `-100${privateMatch[1]}`, messageId: privateMatch[2] };
+  }
+  // Public channel: t.me/USERNAME/MESSAGE_ID
+  const publicMatch = url.match(/t\.me\/([^\/]+)\/(\d+)/);
+  if (publicMatch && publicMatch[1] !== 'c') {
+    return { chatId: `@${publicMatch[1]}`, messageId: publicMatch[2] };
+  }
+  return null;
 }

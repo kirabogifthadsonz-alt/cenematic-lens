@@ -3,6 +3,7 @@ import { useTitles } from "@/hooks/use-titles";
 import { useStore } from "@/lib/store";
 import { detectSource, getPlayableUrl, getGDriveEmbedUrl } from "@/lib/video-utils";
 import TeraboxPlayer from "@/components/TeraboxPlayer";
+import TelegramPlayer from "@/components/TelegramPlayer";
 import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 
@@ -78,6 +79,11 @@ export default function Player() {
   }
 
   if (!title) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Not found</div>;
+
+  // === TELEGRAM: Proxy player ===
+  if (source === "telegram") {
+    return <TelegramPlayer url={title.video_url} title={title.title} wallet={wallet} />;
+  }
 
   // === TERABOX: Dedicated iframe player ===
   if (source === "terabox") {
