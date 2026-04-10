@@ -39,52 +39,39 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // Step 1: Forward the message to get a copy with file access
-    // Use copyMessage to a temp location, or directly use getFile if we have file_id
-    // For private channels, we use forwardMessage to the bot's own chat first,
-    // or we can use the getChat + getFile approach.
-    
-    // Actually, for bots that are admins in channels, we can use getUpdates 
-    // or the /messages endpoint. Let's try using the Bot API's 
-    // copyMessage or forward approach.
-
-    // The simplest: use Telegram's getFile with the message's video file_id.
-    // But we need the file_id first. Let's use forwardMessage to get message details.
-
-    // Step 1: Forward the message to the bot's saved messages to get file details
-    // We'll forward to the same chat (the bot can read it)
-    
-    // Actually, the best approach for channel messages: use the 
-    // Telegram Bot API method `getChat` + reading channel posts.
-    // But Telegram Bot API doesn't have a "getMessage" method.
-    // We need to forward the message to extract file_id.
-
-    // Use copyMessage to forward to the bot itself (bot's chat_id = bot user id)
-    // First get bot info
-    const meResponse = await fetch(`${GATEWAY_URL}/getMe`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({}),
-    });
-    const meData = await meResponse.json();
-    if (!meResponse.ok) {
-      throw new Error(`getMe failed [${meResponse.status}]: ${JSON.stringify(meData)}`);
-    }
-    const botChatId = meData.result.id;
-
-    // Forward the channel message to the bot to get message details with file_id
+    // Forward the message back to the same channel to get the file_id
+    // (bots can't forward to themselves, but can forward within a channel they admin)
     const fwdResponse = await fetch(`${GATEWAY_URL}/forwardMessage`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        chat_id: botChatId,
+        chat_id: chatId,
         from_chat_id: chatId,
         message_id: parseInt(messageId, 10),
       }),
     });
     const fwdData = await fwdResponse.json();
+    
     if (!fwdResponse.ok) {
-      throw new Error(`forwardMessage failed [${fwdResponse.status}]: ${JSON.stringify(fwdData)}`);
+      // If forwarding fails, try copyMessage as fallback
+      const copyResponse = await fetch(`${GATEWAY_URL}/copyMessage`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          chat_id: chatId,
+          from_chat_id: chatId,
+          message_id: parseInt(messageId, 10),
+        }),
+      });
+      const copyData = await copyResponse.json();
+      
+      if (!copyResponse.ok) {
+        throw new Error(`Cannot access message: ${JSON.stringify(fwdData)} / ${JSON.stringify(copyData)}`);
+      }
+      
+      // copyMessage doesn't return file details, so we can't proceed this way.
+      // Let's try getChat + channel history via getUpdates approach
+      throw new Error(`Could not extract file_id. Forward: ${JSON.stringify(fwdData)}`);
     }
 
     const message = fwdData.result;
