@@ -3,23 +3,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/telegram';
+import { TelegramClient } from "npm:telegram@2.26.22";
+import { StringSession } from "npm:telegram@2.26.22/sessions/index.js";
+import { Api } from "npm:telegram@2.26.22/tl/index.js";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-  if (!LOVABLE_API_KEY) {
-    return new Response(JSON.stringify({ error: 'LOVABLE_API_KEY not configured' }), {
+  const apiId = parseInt(Deno.env.get('TELEGRAM_API_ID') || '0', 10);
+  const apiHash = Deno.env.get('TELEGRAM_API_HASH');
+  const sessionString = Deno.env.get('TELEGRAM_SESSION');
+
+  if (!apiId || !apiHash) {
+    return new Response(JSON.stringify({ error: 'TELEGRAM_API_ID or TELEGRAM_API_HASH not configured' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
-  const TELEGRAM_API_KEY = Deno.env.get('TELEGRAM_API_KEY');
-  if (!TELEGRAM_API_KEY) {
-    return new Response(JSON.stringify({ error: 'TELEGRAM_API_KEY not configured' }), {
+  if (!sessionString) {
+    return new Response(JSON.stringify({ error: 'TELEGRAM_SESSION not configured. Run telegram-auth first.' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -33,125 +37,77 @@ Deno.serve(async (req) => {
       });
     }
 
-    const headers = {
-      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-      'X-Connection-Api-Key': TELEGRAM_API_KEY,
-      'Content-Type': 'application/json',
-    };
-
-    // Forward the message back to the same channel to get the file_id
-    // (bots can't forward to themselves, but can forward within a channel they admin)
-    const fwdResponse = await fetch(`${GATEWAY_URL}/forwardMessage`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        chat_id: chatId,
-        from_chat_id: chatId,
-        message_id: parseInt(messageId, 10),
-      }),
+    // Connect via MTProto
+    const session = new StringSession(sessionString);
+    const client = new TelegramClient(session, apiId, apiHash, {
+      connectionRetries: 3,
     });
-    const fwdData = await fwdResponse.json();
-    
-    if (!fwdResponse.ok) {
-      // If forwarding fails, try copyMessage as fallback
-      const copyResponse = await fetch(`${GATEWAY_URL}/copyMessage`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          chat_id: chatId,
-          from_chat_id: chatId,
-          message_id: parseInt(messageId, 10),
-        }),
-      });
-      const copyData = await copyResponse.json();
-      
-      if (!copyResponse.ok) {
-        throw new Error(`Cannot access message: ${JSON.stringify(fwdData)} / ${JSON.stringify(copyData)}`);
+    await client.connect();
+
+    try {
+      // Parse channel ID - remove the -100 prefix for MTProto
+      let channelId = chatId.toString();
+      if (channelId.startsWith('-100')) {
+        channelId = channelId.slice(4);
+      } else if (channelId.startsWith('-')) {
+        channelId = channelId.slice(1);
       }
-      
-      // copyMessage doesn't return file details, so we can't proceed this way.
-      // Let's try getChat + channel history via getUpdates approach
-      throw new Error(`Could not extract file_id. Forward: ${JSON.stringify(fwdData)}`);
-    }
 
-    const message = fwdData.result;
-    
-    // Extract video file_id from the forwarded message
-    let fileId: string | null = null;
-    if (message.video) {
-      fileId = message.video.file_id;
-    } else if (message.document) {
-      fileId = message.document.file_id;
-    } else if (message.animation) {
-      fileId = message.animation.file_id;
-    }
+      // Get the message from the channel
+      const result = await client.invoke(
+        new Api.channels.GetMessages({
+          channel: channelId,
+          id: [new Api.InputMessageID({ id: parseInt(messageId, 10) })],
+        })
+      );
 
-    if (!fileId) {
-      return new Response(JSON.stringify({ error: 'No video found in this message' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Step 2: Get file path from Telegram
-    const fileResponse = await fetch(`${GATEWAY_URL}/getFile`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ file_id: fileId }),
-    });
-    const fileData = await fileResponse.json();
-    if (!fileResponse.ok) {
-      // Telegram returns 400 "file is too big" for files over 20MB
-      if (fileData?.description?.toLowerCase().includes('too big')) {
-        return new Response(JSON.stringify({ 
-          error: 'file_too_large',
-          message: 'This video exceeds the 20MB Telegram Bot API limit.',
-        }), {
-          status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      const messages = result.messages;
+      if (!messages || messages.length === 0) {
+        return new Response(JSON.stringify({ error: 'Message not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      throw new Error(`getFile failed [${fileResponse.status}]: ${JSON.stringify(fileData)}`);
-    }
 
-    const filePath = fileData.result.file_path;
-    const fileSize = fileData.result.file_size || 0;
+      const message = messages[0];
+      if (!message.media) {
+        return new Response(JSON.stringify({ error: 'No media found in this message' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-    // For files > 20MB, Telegram Bot API doesn't support direct download
-    // In that case, return info so the client can handle accordingly
-    if (fileSize > 20 * 1024 * 1024) {
-      return new Response(JSON.stringify({ 
-        error: 'file_too_large',
-        message: 'Video exceeds 20MB Telegram Bot API limit. Consider using Telegram Premium or splitting the video.',
-        fileSize,
-      }), {
-        status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      // Download the media file using MTProto (no size limit!)
+      const buffer = await client.downloadMedia(message.media, {});
+
+      if (!buffer) {
+        return new Response(JSON.stringify({ error: 'Failed to download media' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Determine content type
+      let contentType = 'video/mp4';
+      if (message.media instanceof Api.MessageMediaDocument && message.media.document) {
+        const doc = message.media.document;
+        if (doc instanceof Api.Document) {
+          contentType = doc.mimeType || 'video/mp4';
+        }
+      }
+
+      const fileBytes = buffer instanceof Buffer ? buffer : Buffer.from(buffer as ArrayBuffer);
+
+      return new Response(fileBytes, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': contentType,
+          'Content-Length': fileBytes.length.toString(),
+          'Cache-Control': 'public, max-age=3600',
+        },
       });
+
+    } finally {
+      await client.disconnect();
     }
-
-    // Step 3: Download the file via gateway
-    const downloadResponse = await fetch(`${GATEWAY_URL}/file/${filePath}`, {
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': TELEGRAM_API_KEY,
-      },
-    });
-
-    if (!downloadResponse.ok) {
-      throw new Error(`File download failed [${downloadResponse.status}]`);
-    }
-
-    // Stream the video bytes back to the client
-    const contentType = message.video ? 'video/mp4' : 
-                        message.document?.mime_type || 'application/octet-stream';
-
-    return new Response(downloadResponse.body, {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': contentType,
-        'Content-Length': fileSize.toString(),
-        'Cache-Control': 'public, max-age=3600',
-      },
-    });
 
   } catch (error: unknown) {
     console.error('Telegram video proxy error:', error);
