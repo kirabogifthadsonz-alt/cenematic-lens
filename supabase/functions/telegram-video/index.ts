@@ -100,6 +100,15 @@ Deno.serve(async (req) => {
     });
     const fileData = await fileResponse.json();
     if (!fileResponse.ok) {
+      // Telegram returns 400 "file is too big" for files over 20MB
+      if (fileData?.description?.toLowerCase().includes('too big')) {
+        return new Response(JSON.stringify({ 
+          error: 'file_too_large',
+          message: 'This video exceeds the 20MB Telegram Bot API limit.',
+        }), {
+          status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error(`getFile failed [${fileResponse.status}]: ${JSON.stringify(fileData)}`);
     }
 
