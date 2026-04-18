@@ -9,18 +9,41 @@ export function useScrollRestoration(key?: string) {
   const { pathname } = useLocation();
   const storageKey = `scroll:${key ?? pathname}`;
 
-  // Restore on mount / when key changes
+  // Restore on mount / when key changes. Retry until content has loaded
+  // enough that the document is tall enough to honor the saved offset.
   useEffect(() => {
     const saved = sessionStorage.getItem(storageKey);
-    if (saved !== null) {
-      const y = parseInt(saved, 10);
-      // Wait for content to render before restoring
-      requestAnimationFrame(() => {
+    if (saved === null) return;
+    const y = parseInt(saved, 10);
+    if (!Number.isFinite(y) || y <= 0) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 60; // ~3s at 50ms intervals
+
+    const tryRestore = () => {
+      if (cancelled) return;
+      const maxScroll =
+        document.documentElement.scrollHeight - window.innerHeight;
+      if (maxScroll >= y) {
         window.scrollTo(0, y);
-        // Second pass for late-loading images shifting layout
-        setTimeout(() => window.scrollTo(0, y), 100);
-      });
-    }
+        // One more pass after late layout shifts
+        setTimeout(() => !cancelled && window.scrollTo(0, y), 150);
+        return;
+      }
+      attempts += 1;
+      if (attempts < maxAttempts) {
+        setTimeout(tryRestore, 50);
+      } else {
+        // Give up gracefully — scroll as far as we can
+        window.scrollTo(0, maxScroll);
+      }
+    };
+
+    requestAnimationFrame(tryRestore);
+    return () => {
+      cancelled = true;
+    };
   }, [storageKey]);
 
   // Save on scroll + before unload
