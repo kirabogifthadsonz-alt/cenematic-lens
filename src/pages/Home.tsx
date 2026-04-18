@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Play, Info } from "lucide-react";
 import ContentRow from "@/components/ContentRow";
+import SkeletonRow from "@/components/SkeletonRow";
 import { useTitles } from "@/hooks/use-titles";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 
@@ -20,21 +21,15 @@ export default function Home() {
     return () => clearInterval(t);
   }, [heroTitles.length]);
 
-  if (loading) {
+  if (loading || titles.length === 0) {
     return (
-      <div className="bg-background min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (titles.length === 0) {
-    return (
-      <div className="bg-background min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-foreground text-xl mb-2">No movies yet</p>
-          <p className="text-muted-foreground text-sm">Content will appear here once uploaded by admin.</p>
-        </div>
+      <div className="bg-background min-h-screen pt-24 pb-20">
+        <SkeletonRow title="🔥 Trending Now" />
+        <SkeletonRow title="🆕 New Release" />
+        <SkeletonRow title="🎬 Cinematic Lens Originals" />
+        <SkeletonRow title="📺 Series" />
+        <SkeletonRow title="🇺🇬 Ugawood Hits" />
+        <SkeletonRow title="🎤 VJ Bangers" />
       </div>
     );
   }
