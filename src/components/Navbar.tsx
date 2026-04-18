@@ -11,6 +11,7 @@ const navItems = [
   { label: "Movies", path: "/movies" },
   { label: "New & Popular", path: "/new-popular" },
   { label: "My List", path: "/my-list" },
+  { label: "Get App", path: "/download" },
 ];
 
 export default function Navbar() {

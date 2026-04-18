@@ -15,6 +15,7 @@ import TitleDetail from "./pages/TitleDetail";
 import Player from "./pages/Player";
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
+import Download from "./pages/Download";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
@@ -40,6 +41,7 @@ function AppContent() {
         <Route path="/player/:id" element={<Player />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/referrals" element={<Referrals />} />
+        <Route path="/download" element={<Download />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
