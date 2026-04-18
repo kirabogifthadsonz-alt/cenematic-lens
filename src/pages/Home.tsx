@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { Play, Info } from "lucide-react";
 import ContentRow from "@/components/ContentRow";
 import { useTitles } from "@/hooks/use-titles";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 
 export default function Home() {
+  useScrollRestoration("home");
   const { titles, loading, getTrending, getByRow, getByCategory, getVJ, getFree, getComingSoon } = useTitles();
   const [heroIdx, setHeroIdx] = useState(0);
 
