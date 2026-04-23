@@ -114,11 +114,59 @@ function fmtRuntime(min: number): string {
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-async function enrich(title: string) {
+// --- Lovable AI fallback (for local Ugandan films TMDB doesn't know) ---
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const VALID_CATEGORIES = ["Action", "Comedy", "Drama", "Thriller", "Horror", "Romance", "Sci-Fi", "Fantasy", "Animation", "Documentary", "Family"];
+
+async function aiFallback(title: string, vj: string) {
+  if (!LOVABLE_API_KEY) return null;
+  const vjNote = vj ? ` narrated by VJ ${vj}` : "";
+  const prompt = `You are a movie metadata expert familiar with Ugandan/East African cinema and VJ-narrated films. For the movie titled "${title}"${vjNote}, generate plausible metadata. If you don't recognize it, infer reasonable details from the title alone. Return ONLY valid JSON (no markdown, no code fences) with these exact keys:
+{"description": "2-3 sentence plot synopsis", "genre": "primary genre name", "categories": ["one or more from: Action, Comedy, Drama, Thriller, Horror, Romance, Sci-Fi, Fantasy, Animation, Documentary, Family"], "year": 2020, "duration": "1h 45m", "rating": "PG-13"}`;
+
+  try {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    if (!r.ok) {
+      console.error("AI fallback failed", r.status, await r.text());
+      return null;
+    }
+    const j = await r.json();
+    let text = j.choices?.[0]?.message?.content || "";
+    // Strip markdown code fences if present
+    text = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+    const meta = JSON.parse(text);
+    const cats = (meta.categories || []).filter((c: string) => VALID_CATEGORIES.includes(c));
+    return {
+      tmdb_id: null,
+      description: meta.description || "",
+      year: parseInt(meta.year) || 2025,
+      duration: meta.duration || "1h 30m",
+      thumbnail_url: "", // No poster - admin will need to add manually
+      genre: meta.genre || "Drama",
+      category: cats.length ? cats : ["Drama"],
+      rating: meta.rating || "PG-13",
+    };
+  } catch (e) {
+    console.error("AI fallback parse error:", (e as Error).message);
+    return null;
+  }
+}
+
+async function enrich(title: string, vj: string) {
   const hit = await tmdbSearch(title);
-  if (!hit) return null;
+  if (!hit) {
+    console.log(`TMDB miss for "${title}" - using AI fallback`);
+    return await aiFallback(title, vj);
+  }
   const details = await tmdbDetails(hit.id);
-  if (!details) return null;
+  if (!details) return await aiFallback(title, vj);
   const cats = new Set<string>();
   for (const g of details.genres || []) {
     (GENRE_TO_CATEGORY[g.name] || []).forEach((c) => cats.add(c));
