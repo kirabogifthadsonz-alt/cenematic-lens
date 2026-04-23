@@ -53,6 +53,111 @@ export type Database = {
         }
         Relationships: []
       }
+      dropbox_folders: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          folder_name: string
+          folder_path: string
+          id: string
+          last_cursor: string | null
+          last_synced_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          folder_name?: string
+          folder_path: string
+          id?: string
+          last_cursor?: string | null
+          last_synced_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          folder_name?: string
+          folder_path?: string
+          id?: string
+          last_cursor?: string | null
+          last_synced_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pending_imports: {
+        Row: {
+          category: string[]
+          created_at: string
+          description: string
+          dropbox_file_id: string
+          dropbox_path: string
+          duration: string
+          error_message: string | null
+          genre: string
+          id: string
+          language: string
+          original_filename: string
+          parsed_title: string
+          parsed_vj: string
+          rating: string
+          status: string
+          thumbnail_url: string
+          tmdb_id: number | null
+          tmdb_matched: boolean
+          updated_at: string
+          video_url: string
+          year: number
+        }
+        Insert: {
+          category?: string[]
+          created_at?: string
+          description?: string
+          dropbox_file_id: string
+          dropbox_path: string
+          duration?: string
+          error_message?: string | null
+          genre?: string
+          id?: string
+          language?: string
+          original_filename: string
+          parsed_title?: string
+          parsed_vj?: string
+          rating?: string
+          status?: string
+          thumbnail_url?: string
+          tmdb_id?: number | null
+          tmdb_matched?: boolean
+          updated_at?: string
+          video_url?: string
+          year?: number
+        }
+        Update: {
+          category?: string[]
+          created_at?: string
+          description?: string
+          dropbox_file_id?: string
+          dropbox_path?: string
+          duration?: string
+          error_message?: string | null
+          genre?: string
+          id?: string
+          language?: string
+          original_filename?: string
+          parsed_title?: string
+          parsed_vj?: string
+          rating?: string
+          status?: string
+          thumbnail_url?: string
+          tmdb_id?: number | null
+          tmdb_matched?: boolean
+          updated_at?: string
+          video_url?: string
+          year?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
