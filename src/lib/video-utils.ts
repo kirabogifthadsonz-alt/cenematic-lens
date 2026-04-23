@@ -22,11 +22,13 @@ export function getPlayableUrl(url: string): string {
 
   switch (source) {
     case "dropbox": {
+      // Convert any dropbox.com share link to direct streamable URL
       let playable = url.replace("www.dropbox.com", "dl.dropboxusercontent.com");
-      playable = playable.replace("dl=0", "dl=1");
-      if (!playable.includes("dl=1") && !playable.includes("dl.dropboxusercontent")) {
-        playable += (playable.includes("?") ? "&" : "?") + "dl=1";
-      }
+      // Remove dl=0/dl=1 params - dl.dropboxusercontent serves raw content directly
+      playable = playable.replace(/[?&]dl=[01]/g, "");
+      // Some links use ?raw=1 - keep them as is, otherwise the host alone streams correctly
+      // Clean up potential trailing ? or &
+      playable = playable.replace(/[?&]$/, "");
       return playable;
     }
     case "gdrive": {
