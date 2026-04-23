@@ -32,6 +32,16 @@ export default function DropboxFoldersTab() {
   const addFolder = async () => {
     if (!newPath.trim()) return;
     let path = newPath.trim();
+
+    // Reject Dropbox URLs — these don't work with the API. User must give the folder PATH.
+    if (/^https?:\/\//i.test(path) || path.includes("dropbox.com")) {
+      toast.error(
+        "Please enter the folder PATH (like /Movies), not the share URL. Open Dropbox → find your folder → its path is what comes after 'Dropbox' in the breadcrumb.",
+        { duration: 8000 }
+      );
+      return;
+    }
+
     // Normalize: must start with /, no trailing /
     if (!path.startsWith("/")) path = "/" + path;
     path = path.replace(/\/+$/, "");
@@ -44,7 +54,7 @@ export default function DropboxFoldersTab() {
     if (error) {
       toast.error(error.message.includes("duplicate") ? "Folder already added" : error.message);
     } else {
-      toast.success("Folder added — sync will run within 5 minutes");
+      toast.success("Folder added — click 'Sync Now' to import existing movies");
       setNewPath("");
     }
   };
