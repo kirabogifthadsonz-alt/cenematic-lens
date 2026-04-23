@@ -1,1 +1,4 @@
 project_id = "bxdmtgzsdhrxfsacwytz"
+
+[functions.dropbox-sync]
+verify_jwt = false
