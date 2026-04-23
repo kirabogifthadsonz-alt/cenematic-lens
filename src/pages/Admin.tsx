@@ -268,6 +268,12 @@ export default function Admin() {
               </div>
             )}
 
+            {/* ─── DROPBOX FOLDERS ─── */}
+            {tab === "dropbox" && <DropboxFoldersTab />}
+
+            {/* ─── PENDING REVIEW ─── */}
+            {tab === "pending" && <PendingReviewTab />}
+
             {/* ─── CONTENT LIBRARY ─── */}
             {tab === "content" && (
               <div>
