@@ -222,7 +222,7 @@ async function syncFolder(supabase: any, folder: any) {
         // Fallback to temporary link (4hr expiry, but works for now)
         videoUrl = await getTempLink(entry.path_lower);
       }
-      const meta = await enrich(title);
+      const meta = await enrich(title, vj);
 
       await supabase.from("pending_imports").insert({
         dropbox_file_id: entry.id,
