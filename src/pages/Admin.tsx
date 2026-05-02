@@ -5,10 +5,11 @@ import { useAdmin } from "@/hooks/use-admin";
 import { Tables } from "@/integrations/supabase/types";
 import {
   LayoutDashboard, Film, Users, Receipt, Share2, BarChart3, Settings,
-  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Sparkles,
+  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Sparkles, Download,
 } from "lucide-react";
 import DropboxFoldersTab from "@/components/admin/DropboxFoldersTab";
 import PendingReviewTab from "@/components/admin/PendingReviewTab";
+import MunowatchImportTab from "@/components/admin/MunowatchImportTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
