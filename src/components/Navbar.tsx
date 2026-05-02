@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Bell, User, ChevronDown, Shield } from "lucide-react";
+import { Search, Bell, ChevronDown, Shield } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useAdmin } from "@/hooks/use-admin";
 import logoHorizontal from "@/assets/logo-horizontal.jpg";
 import { useState } from "react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navItems = [
   { label: "Home", path: "/home" },
@@ -93,6 +94,7 @@ export default function Navbar() {
                 </button>
               )}
               <Bell className="w-5 h-5 text-foreground hidden md:block" />
+              <ThemeToggle />
               <Link
                 to="/wallet"
                 className="flex items-center gap-1 bg-primary/20 border border-primary/40 rounded-full px-3 py-1 text-xs font-semibold text-primary"
@@ -121,9 +123,12 @@ export default function Navbar() {
             </>
           )}
           {!isLoggedIn && (
-            <Link to="/login" className="bg-primary text-primary-foreground px-4 py-1.5 rounded text-sm font-semibold hover:bg-primary/90 transition">
-              Sign In
-            </Link>
+            <>
+              <ThemeToggle />
+              <Link to="/login" className="bg-primary text-primary-foreground px-4 py-1.5 rounded text-sm font-semibold hover:bg-primary/90 transition">
+                Sign In
+              </Link>
+            </>
           )}
         </div>
       </div>
