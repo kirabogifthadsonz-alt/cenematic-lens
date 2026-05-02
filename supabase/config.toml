@@ -2,3 +2,6 @@ project_id = "bxdmtgzsdhrxfsacwytz"
 
 [functions.dropbox-sync]
 verify_jwt = false
+
+[functions.munowatch-import]
+verify_jwt = false

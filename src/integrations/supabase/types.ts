@@ -102,6 +102,9 @@ export type Database = {
           parsed_title: string
           parsed_vj: string
           rating: string
+          source: string
+          source_id: string | null
+          source_url: string | null
           status: string
           thumbnail_url: string
           tmdb_id: number | null
@@ -125,6 +128,9 @@ export type Database = {
           parsed_title?: string
           parsed_vj?: string
           rating?: string
+          source?: string
+          source_id?: string | null
+          source_url?: string | null
           status?: string
           thumbnail_url?: string
           tmdb_id?: number | null
@@ -148,6 +154,9 @@ export type Database = {
           parsed_title?: string
           parsed_vj?: string
           rating?: string
+          source?: string
+          source_id?: string | null
+          source_url?: string | null
           status?: string
           thumbnail_url?: string
           tmdb_id?: number | null

@@ -5,10 +5,11 @@ import { useAdmin } from "@/hooks/use-admin";
 import { Tables } from "@/integrations/supabase/types";
 import {
   LayoutDashboard, Film, Users, Receipt, Share2, BarChart3, Settings,
-  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Sparkles,
+  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Sparkles, Download,
 } from "lucide-react";
 import DropboxFoldersTab from "@/components/admin/DropboxFoldersTab";
 import PendingReviewTab from "@/components/admin/PendingReviewTab";
+import MunowatchImportTab from "@/components/admin/MunowatchImportTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +25,13 @@ type DbTitle = Tables<"titles">;
 type DbProfile = Tables<"profiles">;
 type DbTransaction = Tables<"transactions">;
 
-type SidebarTab = "dashboard" | "content" | "dropbox" | "pending" | "users" | "transactions" | "referrals" | "analytics" | "settings";
+type SidebarTab = "dashboard" | "content" | "dropbox" | "munowatch" | "pending" | "users" | "transactions" | "referrals" | "analytics" | "settings";
 
 const sidebarItems: { key: SidebarTab; label: string; icon: React.ReactNode }[] = [
   { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
   { key: "content", label: "Content Library", icon: <Film className="w-4 h-4" /> },
   { key: "dropbox", label: "Dropbox Folders", icon: <Cloud className="w-4 h-4" /> },
+  { key: "munowatch", label: "Munowatch Import", icon: <Download className="w-4 h-4" /> },
   { key: "pending", label: "Review Queue", icon: <Sparkles className="w-4 h-4" /> },
   { key: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
   { key: "transactions", label: "Transactions", icon: <Receipt className="w-4 h-4" /> },
@@ -270,6 +272,9 @@ export default function Admin() {
 
             {/* ─── DROPBOX FOLDERS ─── */}
             {tab === "dropbox" && <DropboxFoldersTab />}
+
+            {/* ─── MUNOWATCH IMPORT ─── */}
+            {tab === "munowatch" && <MunowatchImportTab />}
 
             {/* ─── PENDING REVIEW ─── */}
             {tab === "pending" && <PendingReviewTab />}
