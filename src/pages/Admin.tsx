@@ -273,6 +273,9 @@ export default function Admin() {
             {/* ─── DROPBOX FOLDERS ─── */}
             {tab === "dropbox" && <DropboxFoldersTab />}
 
+            {/* ─── MUNOWATCH IMPORT ─── */}
+            {tab === "munowatch" && <MunowatchImportTab />}
+
             {/* ─── PENDING REVIEW ─── */}
             {tab === "pending" && <PendingReviewTab />}
 
