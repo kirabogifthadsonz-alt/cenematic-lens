@@ -556,7 +556,23 @@ export default function Admin() {
                 <Input placeholder="Duration" value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))} className="bg-secondary border-border" />
                 <Input placeholder="Rating" value={form.rating} onChange={e => setForm(f => ({ ...f, rating: e.target.value }))} className="bg-secondary border-border" />
               </div>
-              <Input placeholder="Video URL" value={form.video_url} onChange={e => setForm(f => ({ ...f, video_url: e.target.value }))} className="bg-secondary border-border" />
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-md border border-border bg-secondary/30">
+                <FileUploader
+                  bucket="posters"
+                  value={form.thumbnail_url}
+                  onChange={(url) => setForm(f => ({ ...f, thumbnail: url, thumbnail_url: url }))}
+                  label="Poster image"
+                  folder="titles"
+                />
+                <FileUploader
+                  bucket="videos"
+                  value={form.video_url}
+                  onChange={(url) => setForm(f => ({ ...f, video_url: url }))}
+                  label="Video file"
+                  folder="titles"
+                />
+              </div>
+              <Input placeholder="…or paste a Video URL (Dropbox, Telegram, Terabox)" value={form.video_url} onChange={e => setForm(f => ({ ...f, video_url: e.target.value }))} className="bg-secondary border-border" />
               <Input placeholder="Categories (comma-separated)" value={form.category.join(", ")} onChange={e => setForm(f => ({ ...f, category: e.target.value.split(",").map(s => s.trim()).filter(Boolean) }))} className="bg-secondary border-border" />
               <Input type="number" placeholder="Price (UGX)" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} className="bg-secondary border-border" />
               <div className="flex gap-4">
