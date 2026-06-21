@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle2, X, Sparkles, Edit2, Save, Globe } from "lucide-react";
 import { toast } from "sonner";
+import FileUploader from "@/components/admin/FileUploader";
 
 type Pending = Tables<"pending_imports">;
 
