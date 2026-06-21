@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle2, X, Sparkles, Edit2, Save, Globe } from "lucide-react";
 import { toast } from "sonner";
+import FileUploader from "@/components/admin/FileUploader";
 
 type Pending = Tables<"pending_imports">;
 
@@ -152,7 +153,20 @@ export default function PendingReviewTab() {
                         </div>
                         <Input value={v.genre || ""} onChange={(e) => setDraft(d => ({ ...d, genre: e.target.value }))} placeholder="Genre" className="bg-secondary border-border h-8 text-xs" />
                         <Input value={(v.category || []).join(", ")} onChange={(e) => setDraft(d => ({ ...d, category: e.target.value.split(",").map(s => s.trim()).filter(Boolean) }))} placeholder="Categories (comma-separated)" className="bg-secondary border-border h-8 text-xs" />
-                        <Input value={v.thumbnail_url || ""} onChange={(e) => setDraft(d => ({ ...d, thumbnail_url: e.target.value }))} placeholder="Poster URL" className="bg-secondary border-border h-8 text-xs" />
+                        <FileUploader
+                          bucket="posters"
+                          value={v.thumbnail_url || ""}
+                          onChange={(url) => setDraft(d => ({ ...d, thumbnail_url: url }))}
+                          label="Poster (upload to cloud)"
+                          folder="review"
+                        />
+                        <FileUploader
+                          bucket="videos"
+                          value={v.video_url || ""}
+                          onChange={(url) => setDraft(d => ({ ...d, video_url: url }))}
+                          label="Video file (upload to cloud)"
+                          folder="review"
+                        />
                         <Textarea value={v.description || ""} onChange={(e) => setDraft(d => ({ ...d, description: e.target.value }))} placeholder="Description" className="bg-secondary border-border text-xs min-h-[60px]" />
                       </>
                     ) : (
