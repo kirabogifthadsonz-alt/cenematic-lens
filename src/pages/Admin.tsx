@@ -136,6 +136,7 @@ export default function Admin() {
       language: t.language, year: t.year, duration: t.duration,
       rating: t.rating, is_free: t.is_free, is_vj: t.is_vj,
       category: t.category, video_url: t.video_url, status: t.status, price: t.price,
+      thumbnail: t.thumbnail || "", thumbnail_url: t.thumbnail_url || "",
     });
     setShowForm(true);
   };
