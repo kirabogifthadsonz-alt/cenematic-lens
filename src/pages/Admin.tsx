@@ -20,6 +20,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import logoHorizontal from "@/assets/logo-horizontal.jpg";
+import FileUploader from "@/components/admin/FileUploader";
 
 type DbTitle = Tables<"titles">;
 type DbProfile = Tables<"profiles">;
