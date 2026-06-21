@@ -124,6 +124,7 @@ export default function Admin() {
       title: "", description: "", genre: "", language: "English", year: 2025,
       duration: "", rating: "PG-13", is_free: false, is_vj: false,
       category: [], video_url: "", status: "live", price: 400,
+      thumbnail: "", thumbnail_url: "",
     });
     setShowForm(true);
   };
