@@ -556,7 +556,7 @@ export default function Admin() {
                 <Input placeholder="Duration" value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))} className="bg-secondary border-border" />
                 <Input placeholder="Rating" value={form.rating} onChange={e => setForm(f => ({ ...f, rating: e.target.value }))} className="bg-secondary border-border" />
               </div>
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-md border border-border bg-secondary/30">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 rounded-md border border-border bg-secondary/30">
                 <FileUploader
                   bucket="posters"
                   value={form.thumbnail_url}
@@ -568,8 +568,15 @@ export default function Admin() {
                   bucket="videos"
                   value={form.video_url}
                   onChange={(url) => setForm(f => ({ ...f, video_url: url }))}
-                  label="Video file"
+                  label="Video → Cloud (≤5GB)"
                   folder="titles"
+                />
+                <FileUploader
+                  bucket="dropbox"
+                  value={form.video_url}
+                  onChange={(url) => setForm(f => ({ ...f, video_url: url }))}
+                  label="Video → Dropbox (big movies)"
+                  folder="Movies"
                 />
               </div>
               <Input placeholder="…or paste a Video URL (Dropbox, Telegram, Terabox)" value={form.video_url} onChange={e => setForm(f => ({ ...f, video_url: e.target.value }))} className="bg-secondary border-border" />
