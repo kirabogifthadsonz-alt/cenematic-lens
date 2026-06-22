@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useTitles } from "@/hooks/use-titles";
 import { useStore } from "@/lib/store";
-import { detectSource, getPlayableUrl, getGDriveEmbedUrl } from "@/lib/video-utils";
+import { detectSource, getPlayableUrl, getGDriveEmbedUrl, getDropboxStoredPath } from "@/lib/video-utils";
+import { supabase } from "@/integrations/supabase/client";
 import TeraboxPlayer from "@/components/TeraboxPlayer";
 import TelegramPlayer from "@/components/TelegramPlayer";
 import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack } from "lucide-react";
@@ -21,11 +22,29 @@ export default function Player() {
   const [currentTime, setCurrentTime] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [videoError, setVideoError] = useState(false);
+  const [resolvedUrl, setResolvedUrl] = useState<string>("");
   const hideTimer = useRef<number>(0);
 
   const source = title ? detectSource(title.video_url) : "unknown";
-  const videoUrl = title ? getPlayableUrl(title.video_url) : "";
+  const dropboxStoredPath = title ? getDropboxStoredPath(title.video_url) : null;
   const gdriveEmbed = title && source === "gdrive" ? getGDriveEmbedUrl(title.video_url) : null;
+
+  // Resolve playback URL: stored Dropbox paths need a fresh signed link
+  useEffect(() => {
+    if (!title) return;
+    if (dropboxStoredPath) {
+      setResolvedUrl("");
+      supabase.functions.invoke("dropbox-stream", { body: { path: dropboxStoredPath } })
+        .then(({ data, error }) => {
+          if (error || !data?.url) { setVideoError(true); return; }
+          setResolvedUrl(data.url);
+        });
+    } else {
+      setResolvedUrl(getPlayableUrl(title.video_url));
+    }
+  }, [title?.id, dropboxStoredPath]);
+
+  const videoUrl = resolvedUrl;
 
   useEffect(() => {
     const v = videoRef.current;

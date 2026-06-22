@@ -5,7 +5,7 @@ import { Loader2, Upload, X, Image as ImageIcon, Film } from "lucide-react";
 import { toast } from "sonner";
 
 interface FileUploaderProps {
-  bucket: "posters" | "videos";
+  bucket: "posters" | "videos" | "dropbox";
   value: string;
   onChange: (publicUrl: string, storagePath: string) => void;
   accept?: string;
@@ -15,8 +15,10 @@ interface FileUploaderProps {
 }
 
 /**
- * Uploads a file directly to a Lovable Cloud storage bucket and returns
- * the public URL for storing in the titles table.
+ * Uploads a file to:
+ *  - Lovable Cloud `posters` bucket (public URL)
+ *  - Lovable Cloud `videos` bucket (signed URL, 1y)
+ *  - Dropbox via edge function (stored as `dropbox-stored:<path>`)
  */
 export default function FileUploader({
   bucket,
@@ -25,13 +27,14 @@ export default function FileUploader({
   accept,
   label,
   folder = "uploads",
-  maxSizeMB = bucket === "videos" ? 2048 : 10,
+  maxSizeMB = bucket === "posters" ? 10 : 5120,
 }: FileUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const isImage = bucket === "posters";
+  const isDropbox = bucket === "dropbox";
   const Icon = isImage ? ImageIcon : Film;
   const defaultAccept = isImage ? "image/*" : "video/*";
 
@@ -43,6 +46,30 @@ export default function FileUploader({
     setUploading(true);
     setProgress(0);
     try {
+      if (isDropbox) {
+        // Stream straight to Dropbox via edge function
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Sign in required");
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dropbox-upload`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "x-filename": file.name,
+            "x-folder": `/${folder}`,
+            "Content-Type": "application/octet-stream",
+          },
+          body: file,
+        });
+        const j = await res.json();
+        if (!res.ok || !j.success) throw new Error(j.error || "Dropbox upload failed");
+        // Store as `dropbox-stored:<path>` so the player can refresh links
+        onChange(`dropbox-stored:${j.dropbox_path}`, j.dropbox_path);
+        setProgress(100);
+        toast.success("Movie uploaded to Dropbox");
+        return;
+      }
+
       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
       const safeName = file.name.replace(/[^a-z0-9.-]+/gi, "_").slice(0, 60);
       const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
@@ -57,7 +84,6 @@ export default function FileUploader({
       if (bucket === "posters") {
         url = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
       } else {
-        // Private bucket — generate a long-lived signed URL (1 year)
         const { data: signed, error: sErr } = await supabase.storage
           .from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
         if (sErr) throw sErr;
