@@ -5,7 +5,7 @@ import { Loader2, Upload, X, Image as ImageIcon, Film } from "lucide-react";
 import { toast } from "sonner";
 
 interface FileUploaderProps {
-  bucket: "posters" | "videos";
+  bucket: "posters" | "videos" | "dropbox";
   value: string;
   onChange: (publicUrl: string, storagePath: string) => void;
   accept?: string;
@@ -15,8 +15,10 @@ interface FileUploaderProps {
 }
 
 /**
- * Uploads a file directly to a Lovable Cloud storage bucket and returns
- * the public URL for storing in the titles table.
+ * Uploads a file to:
+ *  - Lovable Cloud `posters` bucket (public URL)
+ *  - Lovable Cloud `videos` bucket (signed URL, 1y)
+ *  - Dropbox via edge function (stored as `dropbox-stored:<path>`)
  */
 export default function FileUploader({
   bucket,
@@ -25,7 +27,7 @@ export default function FileUploader({
   accept,
   label,
   folder = "uploads",
-  maxSizeMB = bucket === "videos" ? 2048 : 10,
+  maxSizeMB = bucket === "posters" ? 10 : 5120,
 }: FileUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
