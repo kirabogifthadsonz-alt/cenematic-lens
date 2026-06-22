@@ -6,12 +6,19 @@ export type VideoSource = "direct" | "terabox" | "dropbox" | "gdrive" | "telegra
 export function detectSource(url: string): VideoSource {
   if (!url) return "unknown";
   const lower = url.toLowerCase();
+  if (lower.startsWith("dropbox-stored:")) return "dropbox";
   if (lower.includes("t.me/") || lower.includes("telegram.me/")) return "telegram";
   if (lower.includes("terabox") || lower.includes("1024tera") || lower.includes("freeterabox") || lower.includes("teraboxapp") || lower.includes("nephobox") || lower.includes("mirrorbox") || lower.includes("mirrobox") || lower.includes("4funbox")) return "terabox";
   if (lower.includes("dropbox.com") || lower.includes("dl.dropboxusercontent")) return "dropbox";
   if (lower.includes("drive.google.com") || lower.includes("docs.google.com")) return "gdrive";
   if (lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".m3u8") || lower.includes("commondatastorage")) return "direct";
   return "direct";
+}
+
+/** Extract dropbox path from `dropbox-stored:<path>` URI */
+export function getDropboxStoredPath(url: string): string | null {
+  if (!url?.toLowerCase().startsWith("dropbox-stored:")) return null;
+  return url.slice("dropbox-stored:".length);
 }
 
 /**
