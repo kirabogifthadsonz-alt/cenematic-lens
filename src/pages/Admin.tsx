@@ -27,7 +27,7 @@ type DbTitle = Tables<"titles">;
 type DbProfile = Tables<"profiles">;
 type DbTransaction = Tables<"transactions">;
 
-type SidebarTab = "dashboard" | "content" | "dropbox" | "munowatch" | "pending" | "users" | "transactions" | "referrals" | "analytics" | "settings";
+type SidebarTab = "dashboard" | "content" | "dropbox" | "munowatch" | "pending" | "plans" | "users" | "transactions" | "referrals" | "analytics" | "settings";
 
 const sidebarItems: { key: SidebarTab; label: string; icon: React.ReactNode }[] = [
   { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -35,6 +35,7 @@ const sidebarItems: { key: SidebarTab; label: string; icon: React.ReactNode }[] 
   { key: "dropbox", label: "Dropbox Folders", icon: <Cloud className="w-4 h-4" /> },
   { key: "munowatch", label: "Munowatch Import", icon: <Download className="w-4 h-4" /> },
   { key: "pending", label: "Review Queue", icon: <Sparkles className="w-4 h-4" /> },
+  { key: "plans", label: "Subscription Plans", icon: <CreditCard className="w-4 h-4" /> },
   { key: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
   { key: "transactions", label: "Transactions", icon: <Receipt className="w-4 h-4" /> },
   { key: "referrals", label: "Referrals", icon: <Share2 className="w-4 h-4" /> },
