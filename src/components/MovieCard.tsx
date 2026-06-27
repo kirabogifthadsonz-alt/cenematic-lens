@@ -60,7 +60,7 @@ export default function MovieCard({ id, title, thumbnailUrl, isFree, vj }: Movie
           {/* Show FREE for free movies, PLAY for subscribed users, LOCK for non-subscribed */}
           <div className="absolute top-0 right-0 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-bl-md"
             style={{ background: isFree ? "hsl(142 76% 36%)" : isActive ? "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)))" : "rgba(0,0,0,0.7)", color: "#fff" }}>
-            {isFree ? "FREE" : isActive ? "▶" : <Lock className="inline w-2.5 h-2.5" />}
+            {isFree ? "FREE" : (isActive ? "▶" : <Lock className="inline w-2.5 h-2.5" />)}
           </div>
 
           {vj && (

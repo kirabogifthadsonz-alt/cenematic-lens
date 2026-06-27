@@ -15,58 +15,31 @@ export function useTrendingMovies() {
 
   useEffect(() => {
     const fetch = async () => {
-      // Get views from the last 24 hours
-      const twentyFourHoursAgo = new Date();
-      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+      // Use the 'views' field in 'titles' table for trending
+      const { data: movieData, error } = await supabase
+        .from("titles")
+        .select("id, title, thumbnail_url, price, is_free, row, views")
+        .eq("status", "live")
+        .eq("is_coming_soon", false)
+        .order("views", { ascending: false })
+        .limit(20);
 
-      const { data: recentViews } = await supabase
-        .from("views")
-        .select("movie_id")
-        .gte("viewed_at", twentyFourHoursAgo.toISOString());
-
-      if (!recentViews || recentViews.length === 0) {
+      if (error || !movieData) {
+        console.error("Error fetching trending titles:", error);
         setMovies([]);
         return;
       }
 
-      // Count views per movie
-      const viewCounts: Record<string, number> = {};
-      recentViews.forEach((v) => {
-        viewCounts[v.movie_id] = (viewCounts[v.movie_id] || 0) + 1;
-      });
+      const mapped: TrendingMovie[] = movieData.map(m => ({
+        id: m.id,
+        title: m.title,
+        thumbnail_url: m.thumbnail_url,
+        price_ugx: m.price,
+        is_free: m.is_free,
+        row: m.row || "Other"
+      }));
 
-      // Sort by view count descending, take top 20
-      const sortedIds = Object.entries(viewCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20)
-        .map(([id]) => id);
-
-      if (sortedIds.length === 0) {
-        setMovies([]);
-        return;
-      }
-
-      // Fetch movie details
-      const { data: movieData } = await supabase
-        .from("movies")
-        .select("id, title, thumbnail_url, price_ugx, is_free, row")
-        .in("id", sortedIds)
-        .eq("is_coming_soon", false);
-
-      if (!movieData) {
-        setMovies([]);
-        return;
-      }
-
-      // Sort by view count
-      const movieMap = new Map(movieData.map((m) => [m.id, m]));
-      const sorted: TrendingMovie[] = [];
-      for (const id of sortedIds) {
-        const m = movieMap.get(id);
-        if (m) sorted.push(m);
-      }
-
-      setMovies(sorted);
+      setMovies(mapped);
     };
 
     fetch();
