@@ -1,108 +1,102 @@
-import { useState, useCallback, useEffect } from "react";
-import HeroSection from "@/components/HeroSection";
-import MovieRow from "@/components/MovieRow";
-import MovieRowSkeleton from "@/components/MovieRowSkeleton";
-import ContinueWatchingRow from "@/components/ContinueWatchingRow";
-import WatchedRow from "@/components/WatchedRow";
-import SplashScreen from "@/components/SplashScreen";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Play, Info } from "lucide-react";
+import ContentRow from "@/components/ContentRow";
+import SkeletonRow from "@/components/SkeletonRow";
+import { useTitles } from "@/hooks/use-titles";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import Footer from "@/components/Footer";
 import MarqueeBar from "@/components/MarqueeBar";
-import { useMoviesByRow } from "@/hooks/useMoviesByRow";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useTrendingMovies } from "@/hooks/useTrendingMovies";
-import { useContentRows, useCategories } from "@/hooks/useAdminLists";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { WifiOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function Home() {
-  const alreadyShown = sessionStorage.getItem("splash_shown") === "true";
-  const [splashDone, setSplashDone] = useState(alreadyShown);
-  const [userId, setUserId] = useState<string | null>(null);
-  const { moviesByRow, seriesByRow, moviesByCategory, loading: moviesLoading } = useMoviesByRow();
-  const trendingMovies = useTrendingMovies();
-  const { rows, loading: rowsLoading } = useContentRows();
-  const { categories } = useCategories();
-  const online = useOnlineStatus();
-  const showSkeleton = (moviesLoading || rowsLoading) && rows.length === 0;
+  useScrollRestoration("home");
+  const { titles, loading, getTrending, getByRow, getVJ, getFree, getComingSoon } = useTitles();
+  const [heroIdx, setHeroIdx] = useState(0);
+  const liveItems = titles.filter(t => t.status === "live" && !t.is_coming_soon);
+  const heroTitles = liveItems.slice(0, 5);
+  const hero = heroTitles[heroIdx] || null;
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
-  }, []);
+    if (heroTitles.length === 0) return;
+    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroTitles.length), 6000);
+    return () => clearInterval(t);
+  }, [heroTitles.length]);
 
-  // Apply any pending referral code captured before OAuth/email confirmation
-  useEffect(() => {
-    if (!userId) return;
-    const ref = localStorage.getItem("pending_referral_code");
-    if (!ref) return;
-    supabase.rpc("apply_referral_code", { _code: ref }).then(() => {
-      localStorage.removeItem("pending_referral_code");
-    });
-  }, [userId]);
-
-  usePushNotifications(userId);
-
-  const handleSplashComplete = useCallback(() => {
-    sessionStorage.setItem("splash_shown", "true");
-    setSplashDone(true);
-  }, []);
-
-  // Build ordered row names from DB, excluding Coming Soon (handled separately)
-  const orderedRows = rows
-    .filter(r => r.name !== "Coming Soon")
-    .map(r => r.name);
-
-  const seriesRowNames = rows.filter(r => r.is_series_row).map(r => r.name);
+  if (loading || titles.length === 0) {
+    return (
+      <div className="bg-background min-h-screen pt-24 pb-20">
+        <SkeletonRow title="🔥 Trending Now" />
+        <SkeletonRow title="🆕 New Release" />
+        <SkeletonRow title="🎬 Cinematic Lens Originals" />
+        <SkeletonRow title="📺 Series" />
+        <SkeletonRow title="🇺🇬 Ugawood Hits" />
+        <SkeletonRow title="🎤 VJ Bangers" />
+      </div>
+    );
+  }
 
   return (
-    <>
-      {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
-      <div className="min-h-screen bg-background">
-        <HeroSection />
-        <MarqueeBar />
-        {!online && (
-          <div className="mx-4 md:mx-12 mt-3 mb-1 flex items-center gap-2 rounded-md border border-border/60 bg-card/70 px-3 py-2 text-xs text-muted-foreground">
-            <WifiOff className="w-3.5 h-3.5" />
-            <span>You're offline — showing the app shell. Content will load once you're back online.</span>
+    <div className="bg-background min-h-screen">
+      {/* Hero */}
+      {hero && (
+        <div className="relative h-[70vh] md:h-[85vh]">
+          <div className="absolute inset-0 bg-secondary">
+            {hero.video_url && (
+              <video key={hero.id} autoPlay muted loop playsInline className="w-full h-full object-cover opacity-60" src={hero.video_url} />
+            )}
           </div>
-        )}
-        <div className="-mt-20 relative z-10 pb-16">
-          {showSkeleton && (
-            <div className="pt-24">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <MovieRowSkeleton key={i} />
-              ))}
+          <div className="absolute inset-0 gradient-cinema" />
+          <div className="absolute bottom-[15%] md:bottom-[20%] left-4 md:left-12 z-10 max-w-lg">
+            <h1 className="text-display text-4xl md:text-6xl mb-3 leading-tight">{hero.title}</h1>
+            <p className="text-sm md:text-base text-foreground/80 mb-5 line-clamp-3">{hero.description}</p>
+            {hero.price > 0 && (
+              <span className="inline-block mb-3 bg-gradient-to-r from-primary to-yellow-500 text-background text-xs font-bold px-3 py-1 rounded">
+                UGX {hero.price.toLocaleString()}
+              </span>
+            )}
+            <div className="flex gap-3">
+              <Link
+                to={`/title/${hero.id}`}
+                className="flex items-center gap-2 bg-foreground text-background px-5 md:px-7 py-2.5 rounded font-semibold hover:bg-foreground/80 transition"
+              >
+                <Play className="w-5 h-5 fill-background" /> Play
+              </Link>
+              <Link
+                to={`/title/${hero.id}`}
+                className="flex items-center gap-2 bg-secondary/80 text-foreground px-5 md:px-7 py-2.5 rounded font-semibold hover:bg-secondary transition"
+              >
+                <Info className="w-5 h-5" /> More Info
+              </Link>
             </div>
-          )}
-          <ContinueWatchingRow />
-          {/* Trending first */}
-          {trendingMovies.length > 0 && (
-            <MovieRow key="Trending" title="🔥 Trending" movies={trendingMovies} />
-          )}
-          {/* Coming Soon second */}
-          {(moviesByRow["Coming Soon"]?.length ?? 0) > 0 && (
-            <MovieRow key="Coming Soon" title="Coming Soon" movies={moviesByRow["Coming Soon"]} />
-          )}
-          {/* Watched row third */}
-          <WatchedRow />
-          {/* Remaining custom rows from DB */}
-          {orderedRows.map((row) => (
-            <MovieRow
-              key={row}
-              title={row}
-              movies={moviesByRow[row] || []}
-              seriesGroups={seriesRowNames.includes(row) ? seriesByRow[row] : undefined}
-            />
-          ))}
-          {/* Category rows — auto-generated from categories table */}
-          {categories.map((c) => {
-            const list = moviesByCategory[c.name];
-            if (!list || list.length === 0) return null;
-            return <MovieRow key={`cat-${c.id}`} title={c.name} movies={list} />;
-          })}
+          </div>
+          <div className="absolute bottom-6 right-4 md:right-12 flex gap-1.5 z-10">
+            {heroTitles.map((_, i) => (
+              <button key={i} onClick={() => setHeroIdx(i)}
+                className={`w-3 h-0.5 rounded-full transition-all ${i === heroIdx ? "bg-foreground w-6" : "bg-muted-foreground"}`}
+              />
+            ))}
+          </div>
         </div>
-        <Footer />
+      )}
+
+      <MarqueeBar />
+
+      {/* Rows — live from database */}
+      <div className={`${hero ? "-mt-20" : "pt-20"} relative z-10 pb-20`}>
+        <ContentRow title="🔥 Trending Now" items={getTrending()} />
+        <ContentRow title="🆕 New Release" items={getByRow("New Release")} />
+        <ContentRow title="🎬 Cinematic Lens Originals" items={getByRow("Cinematic Lens Original")} />
+        <ContentRow title="📺 Series" items={getByRow("Series")} />
+        <ContentRow title="🇺🇬 Ugawood Hits" items={getByRow("Ugawood Hits")} />
+        <ContentRow title="🎤 VJ Bangers" items={getVJ().slice(0, 10)} />
+        <ContentRow title="🇳🇬 Nollywood" items={getByRow("Nollywood")} />
+        <ContentRow title="👶 Kids & Family" items={getByRow("Kids and Family")} />
+        <ContentRow title="🆓 Watch Free" items={getFree()} />
+        {getComingSoon().length > 0 && (
+          <ContentRow title="🔜 Coming Soon" items={getComingSoon()} />
+        )}
       </div>
-    </>
+      <Footer />
+    </div>
   );
 }

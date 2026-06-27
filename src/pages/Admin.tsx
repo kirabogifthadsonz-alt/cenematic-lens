@@ -34,7 +34,7 @@ import AiMagicUpload from "@/components/admin/AiMagicUpload";
 import DropboxFolderUpload from "@/components/admin/DropboxFolderUpload";
 import DropboxAiWatchPanel from "@/components/admin/DropboxAiWatchPanel";
 import AdvancedAiWatchPanel from "@/components/admin/AdvancedAiWatchPanel";
-import { Sparkles, Zap, FolderOpen, Layers } from "lucide-react";
+import { Sparkles, Zap, FolderOpen, Layers, Upload } from "lucide-react";
 
 type DbTitle = Tables<"titles">;
 type DbProfile = Tables<"profiles">;
@@ -329,6 +329,9 @@ export default function Admin() {
                     <p className="text-sm text-muted-foreground">{titles.length} titles</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => setShowForm(true)} className="gap-2">
+                      <Upload className="w-4 h-4" /> Original Upload
+                    </Button>
                     <Button onClick={() => setShowAiMagic(true)} variant="outline" className="gap-2 border-primary/30 bg-primary/5 hover:bg-primary/10">
                       <Sparkles className="w-4 h-4 text-primary" /> AI Magic
                     </Button>
@@ -340,9 +343,6 @@ export default function Admin() {
                     </Button>
                     <Button onClick={() => setShowBulkSeries(true)} variant="outline" className="gap-2">
                       <Layers className="w-4 h-4" /> Bulk Series
-                    </Button>
-                    <Button onClick={openAdd} className="gap-2">
-                      <Plus className="w-4 h-4" /> Manual Add
                     </Button>
                   </div>
                 </div>
