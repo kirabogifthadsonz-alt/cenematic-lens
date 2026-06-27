@@ -9,8 +9,14 @@ import {
 } from "lucide-react";
 import DropboxFoldersTab from "@/components/admin/DropboxFoldersTab";
 import PendingReviewTab from "@/components/admin/PendingReviewTab";
-import MunowatchImportTab from "@/components/admin/MunowatchImportTab";
 import SubscriptionPlansTab from "@/components/admin/SubscriptionPlansTab";
+import PricingTab from "@/components/admin/PricingTab";
+import CategoriesTab from "@/components/admin/CategoriesTab";
+import LogoIntroTab from "@/components/admin/LogoIntroTab";
+import MovieRequestsTab from "@/components/admin/MovieRequestsTab";
+import SubAdminsTab from "@/components/admin/SubAdminsTab";
+import WalletPromoTab from "@/components/admin/WalletPromoTab";
+import LowerThirdEditorTab from "@/components/LowerThirdEditorTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,23 +28,37 @@ import {
 } from "@/components/ui/dialog";
 import logoHorizontal from "@/assets/logo-horizontal.jpg";
 import FileUploader from "@/components/admin/FileUploader";
+import BulkSeriesUpload from "@/components/BulkSeriesUpload";
+import BulkMovieWizard from "@/components/admin/BulkMovieWizard";
+import AiMagicUpload from "@/components/admin/AiMagicUpload";
+import DropboxFolderUpload from "@/components/admin/DropboxFolderUpload";
+import DropboxAiWatchPanel from "@/components/admin/DropboxAiWatchPanel";
+import AdvancedAiWatchPanel from "@/components/admin/AdvancedAiWatchPanel";
+import { Sparkles, Zap, FolderOpen, Layers } from "lucide-react";
 
 type DbTitle = Tables<"titles">;
 type DbProfile = Tables<"profiles">;
 type DbTransaction = Tables<"transactions">;
 
-type SidebarTab = "dashboard" | "content" | "dropbox" | "munowatch" | "pending" | "plans" | "users" | "transactions" | "referrals" | "analytics" | "settings";
+type SidebarTab = "dashboard" | "content" | "dropbox" | "pending" | "plans" | "users" | "transactions" | "referrals" | "analytics" | "settings" | "pricing" | "manage_categories" | "manage_vjs" | "manage_rows" | "logo_intro" | "marquee" | "squeeze" | "lower_third" | "music" | "movie_requests" | "wallet_promo" | "sub_admins";
 
 const sidebarItems: { key: SidebarTab; label: string; icon: React.ReactNode }[] = [
   { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
   { key: "content", label: "Content Library", icon: <Film className="w-4 h-4" /> },
   { key: "dropbox", label: "Dropbox Folders", icon: <Cloud className="w-4 h-4" /> },
-  { key: "munowatch", label: "Munowatch Import", icon: <Download className="w-4 h-4" /> },
   { key: "pending", label: "Review Queue", icon: <Sparkles className="w-4 h-4" /> },
   { key: "plans", label: "Subscription Plans", icon: <CreditCard className="w-4 h-4" /> },
   { key: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
   { key: "transactions", label: "Transactions", icon: <Receipt className="w-4 h-4" /> },
   { key: "referrals", label: "Referrals", icon: <Share2 className="w-4 h-4" /> },
+  { key: "pricing", label: "Pricing", icon: <CreditCard className="w-4 h-4" /> },
+  { key: "manage_categories", label: "Categories", icon: <Settings className="w-4 h-4" /> },
+  { key: "manage_vjs", label: "VJ Narrators", icon: <Users className="w-4 h-4" /> },
+  { key: "manage_rows", label: "Content Rows", icon: <LayoutDashboard className="w-4 h-4" /> },
+  { key: "logo_intro", label: "Logo Animation", icon: <Film className="w-4 h-4" /> },
+  { key: "movie_requests", label: "Movie Requests", icon: <Download className="w-4 h-4" /> },
+  { key: "wallet_promo", label: "Wallet Promo", icon: <CreditCard className="w-4 h-4" /> },
+  { key: "sub_admins", label: "Sub-Admins", icon: <Users className="w-4 h-4" /> },
   { key: "analytics", label: "Analytics", icon: <BarChart3 className="w-4 h-4" /> },
   { key: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
 ];
@@ -57,6 +77,12 @@ export default function Admin() {
 
   // Content form
   const [showForm, setShowForm] = useState(false);
+  const [showBulkSeries, setShowBulkSeries] = useState(false);
+  const [showBulkMovieWizard, setShowBulkMovieWizard] = useState(false);
+  const [showAiMagic, setShowAiMagic] = useState(false);
+  const [showDropboxFolder, setShowDropboxFolder] = useState(false);
+  const [showAiWatch, setShowAiWatch] = useState(false);
+  const [showAdvancedAiWatch, setShowAdvancedAiWatch] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -280,13 +306,19 @@ export default function Admin() {
             {tab === "dropbox" && <DropboxFoldersTab />}
 
             {/* ─── MUNOWATCH IMPORT ─── */}
-            {tab === "munowatch" && <MunowatchImportTab />}
 
             {/* ─── PENDING REVIEW ─── */}
             {tab === "pending" && <PendingReviewTab />}
 
             {/* ─── SUBSCRIPTION PLANS ─── */}
             {tab === "plans" && <SubscriptionPlansTab />}
+            {tab === "pricing" && <PricingTab />}
+            {tab === "manage_categories" && <CategoriesTab />}
+            {tab === "logo_intro" && <LogoIntroTab />}
+            {tab === "movie_requests" && <MovieRequestsTab />}
+            {tab === "wallet_promo" && <WalletPromoTab />}
+            {tab === "sub_admins" && <SubAdminsTab />}
+            {tab === "lower_third" && <LowerThirdEditorTab />}
 
             {/* ─── CONTENT LIBRARY ─── */}
             {tab === "content" && (
@@ -296,8 +328,31 @@ export default function Admin() {
                     <h1 className="text-2xl font-bold text-foreground">Content Library</h1>
                     <p className="text-sm text-muted-foreground">{titles.length} titles</p>
                   </div>
-                  <Button onClick={openAdd} className="gap-2">
-                    <Plus className="w-4 h-4" /> Add New Movie / Series
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => setShowAiMagic(true)} variant="outline" className="gap-2 border-primary/30 bg-primary/5 hover:bg-primary/10">
+                      <Sparkles className="w-4 h-4 text-primary" /> AI Magic
+                    </Button>
+                    <Button onClick={() => setShowBulkMovieWizard(true)} variant="outline" className="gap-2">
+                      <Zap className="w-4 h-4" /> Bulk Wizard
+                    </Button>
+                    <Button onClick={() => setShowDropboxFolder(true)} variant="outline" className="gap-2">
+                      <FolderOpen className="w-4 h-4" /> Dropbox Folder
+                    </Button>
+                    <Button onClick={() => setShowBulkSeries(true)} variant="outline" className="gap-2">
+                      <Layers className="w-4 h-4" /> Bulk Series
+                    </Button>
+                    <Button onClick={openAdd} className="gap-2">
+                      <Plus className="w-4 h-4" /> Manual Add
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <Button onClick={() => setShowAiWatch(true)} variant="secondary" size="sm" className="gap-2">
+                    <Sparkles className="w-3.5 h-3.5" /> Dropbox AI Watch
+                  </Button>
+                  <Button onClick={() => setShowAdvancedAiWatch(true)} variant="secondary" size="sm" className="gap-2">
+                    <Zap className="w-3.5 h-3.5" /> Advanced AI Watch
                   </Button>
                 </div>
 
@@ -615,6 +670,14 @@ export default function Admin() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* ─── NEW ADMIN MODALS ─── */}
+        {showBulkSeries && <BulkSeriesUpload onClose={() => setShowBulkSeries(false)} />}
+        {showBulkMovieWizard && <BulkMovieWizard onClose={() => setShowBulkMovieWizard(false)} />}
+        {showAiMagic && <AiMagicUpload onClose={() => setShowAiMagic(false)} />}
+        {showDropboxFolder && <DropboxFolderUpload onClose={() => setShowDropboxFolder(false)} />}
+        {showAiWatch && <DropboxAiWatchPanel onClose={() => setShowAiWatch(false)} />}
+        {showAdvancedAiWatch && <AdvancedAiWatchPanel onClose={() => setShowAdvancedAiWatch(false)} />}
 
         {/* ─── DELETE CONFIRMATION ─── */}
         <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
