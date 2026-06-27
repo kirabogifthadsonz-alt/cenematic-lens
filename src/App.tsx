@@ -13,6 +13,7 @@ import NewPopular from "./pages/NewPopular";
 import MyList from "./pages/MyList";
 import TitleDetail from "./pages/TitleDetail";
 import Player from "./pages/Player";
+import Profile from "./pages/Profile";
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
 import Download from "./pages/Download";
@@ -39,6 +40,7 @@ function AppContent() {
         <Route path="/my-list" element={<MyList />} />
         <Route path="/title/:id" element={<TitleDetail />} />
         <Route path="/player/:id" element={<Player />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/referrals" element={<Referrals />} />
         <Route path="/download" element={<Download />} />

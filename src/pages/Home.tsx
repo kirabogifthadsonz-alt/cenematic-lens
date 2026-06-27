@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Play, Info } from "lucide-react";
-import ContentRow from "@/components/ContentRow";
-import SkeletonRow from "@/components/SkeletonRow";
-import { useTitles } from "@/hooks/use-titles";
-import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import MovieRow from "@/components/MovieRow";
+import MovieRowSkeleton from "@/components/MovieRowSkeleton";
 import Footer from "@/components/Footer";
 import MarqueeBar from "@/components/MarqueeBar";
+import { useTitles } from "@/hooks/use-titles";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
+import { Play, Info } from "lucide-react";
 
 export default function Home() {
   useScrollRestoration("home");
+  const navigate = useNavigate();
   const { titles, loading, getTrending, getByRow, getVJ, getFree, getComingSoon } = useTitles();
   const [heroIdx, setHeroIdx] = useState(0);
+
   const liveItems = titles.filter(t => t.status === "live" && !t.is_coming_soon);
   const heroTitles = liveItems.slice(0, 5);
   const hero = heroTitles[heroIdx] || null;
@@ -25,19 +28,16 @@ export default function Home() {
   if (loading || titles.length === 0) {
     return (
       <div className="bg-background min-h-screen pt-24 pb-20">
-        <SkeletonRow title="🔥 Trending Now" />
-        <SkeletonRow title="🆕 New Release" />
-        <SkeletonRow title="🎬 Cinematic Lens Originals" />
-        <SkeletonRow title="📺 Series" />
-        <SkeletonRow title="🇺🇬 Ugawood Hits" />
-        <SkeletonRow title="🎤 VJ Bangers" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <MovieRowSkeleton key={i} />
+        ))}
       </div>
     );
   }
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Hero */}
+      {/* NEW SHELL: Hero Section with new design */}
       {hero && (
         <div className="relative h-[70vh] md:h-[85vh]">
           <div className="absolute inset-0 bg-secondary">
@@ -55,18 +55,18 @@ export default function Home() {
               </span>
             )}
             <div className="flex gap-3">
-              <Link
-                to={`/title/${hero.id}`}
+              <button
+                onClick={() => navigate(`/title/${hero.id}`)}
                 className="flex items-center gap-2 bg-foreground text-background px-5 md:px-7 py-2.5 rounded font-semibold hover:bg-foreground/80 transition"
               >
                 <Play className="w-5 h-5 fill-background" /> Play
-              </Link>
-              <Link
-                to={`/title/${hero.id}`}
+              </button>
+              <button
+                onClick={() => navigate(`/title/${hero.id}`)}
                 className="flex items-center gap-2 bg-secondary/80 text-foreground px-5 md:px-7 py-2.5 rounded font-semibold hover:bg-secondary transition"
               >
                 <Info className="w-5 h-5" /> More Info
-              </Link>
+              </button>
             </div>
           </div>
           <div className="absolute bottom-6 right-4 md:right-12 flex gap-1.5 z-10">
@@ -81,21 +81,139 @@ export default function Home() {
 
       <MarqueeBar />
 
-      {/* Rows — live from database */}
+      {/* NEW SHELL: Movie Rows with original data wiring */}
       <div className={`${hero ? "-mt-20" : "pt-20"} relative z-10 pb-20`}>
-        <ContentRow title="🔥 Trending Now" items={getTrending()} />
-        <ContentRow title="🆕 New Release" items={getByRow("New Release")} />
-        <ContentRow title="🎬 Cinematic Lens Originals" items={getByRow("Cinematic Lens Original")} />
-        <ContentRow title="📺 Series" items={getByRow("Series")} />
-        <ContentRow title="🇺🇬 Ugawood Hits" items={getByRow("Ugawood Hits")} />
-        <ContentRow title="🎤 VJ Bangers" items={getVJ().slice(0, 10)} />
-        <ContentRow title="🇳🇬 Nollywood" items={getByRow("Nollywood")} />
-        <ContentRow title="👶 Kids & Family" items={getByRow("Kids and Family")} />
-        <ContentRow title="🆓 Watch Free" items={getFree()} />
+        {/* Trending */}
+        {getTrending().length > 0 && (
+          <MovieRow title="🔥 Trending Now" movies={getTrending().map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* New Release */}
+        {getByRow("New Release").length > 0 && (
+          <MovieRow title="🆕 New Release" movies={getByRow("New Release").map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Cinematic Lens Originals */}
+        {getByRow("Cinematic Lens Original").length > 0 && (
+          <MovieRow title="🎬 Cinematic Lens Originals" movies={getByRow("Cinematic Lens Original").map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Series */}
+        {getByRow("Series").length > 0 && (
+          <MovieRow title="📺 Series" movies={getByRow("Series").map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Ugawood Hits */}
+        {getByRow("Ugawood Hits").length > 0 && (
+          <MovieRow title="🇺🇬 Ugawood Hits" movies={getByRow("Ugawood Hits").map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* VJ Bangers */}
+        {getVJ().length > 0 && (
+          <MovieRow title="🎤 VJ Bangers" movies={getVJ().slice(0, 10).map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Nollywood */}
+        {getByRow("Nollywood").length > 0 && (
+          <MovieRow title="🇳🇬 Nollywood" movies={getByRow("Nollywood").map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Kids & Family */}
+        {getByRow("Kids and Family").length > 0 && (
+          <MovieRow title="👶 Kids & Family" movies={getByRow("Kids and Family").map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Watch Free */}
+        {getFree().length > 0 && (
+          <MovieRow title="🆓 Watch Free" movies={getFree().map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
+        )}
+
+        {/* Coming Soon */}
         {getComingSoon().length > 0 && (
-          <ContentRow title="🔜 Coming Soon" items={getComingSoon()} />
+          <MovieRow title="🔜 Coming Soon" movies={getComingSoon().map(t => ({
+            id: t.id,
+            title: t.title,
+            thumbnail_url: t.thumbnail_url,
+            price_ugx: t.price,
+            is_free: t.is_free,
+            row: t.row || "Other",
+            vj: t.vj_narrator
+          }))} />
         )}
       </div>
+
       <Footer />
     </div>
   );
