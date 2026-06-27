@@ -285,6 +285,9 @@ export default function Admin() {
             {/* ─── PENDING REVIEW ─── */}
             {tab === "pending" && <PendingReviewTab />}
 
+            {/* ─── SUBSCRIPTION PLANS ─── */}
+            {tab === "plans" && <SubscriptionPlansTab />}
+
             {/* ─── CONTENT LIBRARY ─── */}
             {tab === "content" && (
               <div>
