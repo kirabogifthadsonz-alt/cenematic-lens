@@ -25,7 +25,7 @@ export default function MarqueeBar({ variant = "page" }: MarqueeBarProps) {
         .select("id, text, font_size, font_family, font_color, background_color, speed")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
-      setAds((data as MarqueeAd[]) || []);
+      setAds((data as unknown as MarqueeAd[]) || []);
     };
     fetch();
 
