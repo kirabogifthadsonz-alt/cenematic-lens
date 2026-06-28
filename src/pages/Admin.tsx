@@ -314,7 +314,7 @@ export default function Admin() {
             {/* ─── SUBSCRIPTION PLANS ─── */}
             {tab === "plans" && <SubscriptionPlansTab />}
             {tab === "pricing" && <PricingTab />}
-            {tab === "manage_categories" && <CategoriesTab />}
+            {tab === "manage_categories" && <CategoriesTab onUpdate={() => {}} />}
             {tab === "logo_intro" && <LogoIntroTab />}
             {tab === "movie_requests" && <MovieRequestsTab />}
             {tab === "wallet_promo" && <WalletPromoTab />}
