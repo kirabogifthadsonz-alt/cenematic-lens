@@ -30,6 +30,9 @@ interface PendingMovie {
   custom_poster_url: string | null;
   custom_category: string | null;
   preparation_notes: string | null;
+  video_url?: string | null;
+  video_url_720p?: string | null;
+  video_url_480p?: string | null;
   last_edited_at: string;
 }
 
