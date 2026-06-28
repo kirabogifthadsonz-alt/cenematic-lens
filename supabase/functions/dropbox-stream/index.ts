@@ -31,7 +31,7 @@ async function getDropboxToken(): Promise<string> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
-    if (!DROPBOX_TOKEN) throw new Error("DROPBOX_ACCESS_TOKEN not configured");
+    if (!DBX_APP_KEY || !DBX_APP_SECRET || !DBX_REFRESH) throw new Error("Dropbox OAuth secrets not configured");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
