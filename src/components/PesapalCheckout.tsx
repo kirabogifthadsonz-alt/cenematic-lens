@@ -57,7 +57,7 @@ export default function PesapalCheckout({
             body: JSON.stringify({
               package_key: packageKey,
               currency,
-              callback_url: window.location.origin + "/wallet?payment=callback",
+              callback_url: window.location.origin + "/profile?payment=callback",
             }),
           }
         );

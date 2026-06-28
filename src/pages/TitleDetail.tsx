@@ -1,76 +1,129 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTitles } from "@/hooks/use-titles";
+import { useSubscription } from "@/hooks/useSubscription";
+import SubscribeDialog from "@/components/SubscribeDialog";
+import { Play, Plus, Check, ArrowLeft, Info } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
-import { Play, Plus, Check, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { detectSource, getPlayableUrl, getDropboxStoredPath } from "@/lib/video-utils";
 
 export default function TitleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getById, loading } = useTitles();
   const title = getById(id || "");
-  const { myList, addToList, removeFromList, freeCredits, wallet } = useStore();
-  const [showDepositModal, setShowDepositModal] = useState(false);
-  const store = useStore();
+  const { myList, addToList, removeFromList } = useStore();
+  const { isActive } = useSubscription();
+  const [showSubscribe, setShowSubscribe] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Resolve a playable preview URL (Dropbox needs a fresh signed link)
+  useEffect(() => {
+    if (!title?.video_url) { setPreviewUrl(""); return; }
+    const source = detectSource(title.video_url);
+    const storedPath = getDropboxStoredPath(title.video_url);
+    if (storedPath) {
+      supabase.functions.invoke("dropbox-stream", { body: { path: storedPath } })
+        .then(({ data, error }) => {
+          if (!error && data?.url) setPreviewUrl(data.url);
+        });
+    } else if (source === "direct" || source === "dropbox") {
+      setPreviewUrl(getPlayableUrl(title.video_url));
+    } else {
+      setPreviewUrl(""); // YouTube/gdrive/terabox/telegram — fall back to thumbnail
+    }
+  }, [title?.id, title?.video_url]);
 
   if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!title) return <div className="min-h-screen bg-background pt-20 px-4 text-foreground">Title not found.</div>;
 
   const inList = myList.includes(title.id);
-  const canWatchFree = title.is_free || freeCredits > 0;
 
-  const handleWatch = () => {
-    if (title.is_free) {
-      navigate(`/player/${title.id}`);
-      return;
-    }
-    const result = store.watchTitle(title.id, title.title);
-    if (result === 'insufficient') {
-      setShowDepositModal(true);
-    } else {
-      navigate(`/player/${title.id}`);
-    }
+  const handlePlay = async () => {
+    if (title.is_free) { navigate(`/player/${title.id}`); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/login"); return; }
+    if (!isActive) { setShowSubscribe(true); return; }
+    navigate(`/player/${title.id}`);
   };
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="relative h-[50vh] md:h-[65vh]">
-        {title.video_url && (
-          <video autoPlay muted loop playsInline className="w-full h-full object-cover opacity-50" src={title.video_url} />
+      {/* Hero/preview area — matches HeroSection look */}
+      <div className="relative h-[60vh] md:h-[80vh] overflow-hidden">
+        {/* Thumbnail fallback behind the video */}
+        {title.thumbnail_url && (
+          <img
+            src={title.thumbnail_url}
+            alt={title.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
-        <div className="absolute inset-0 gradient-cinema" />
-        <button onClick={() => navigate(-1)} className="absolute top-20 left-4 md:left-12 z-10 text-foreground">
-          <ArrowLeft className="w-6 h-6" />
+        {/* Playable preview when we have a direct/dropbox URL */}
+        {previewUrl && (
+          <video
+            ref={videoRef}
+            key={previewUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={title.thumbnail_url || undefined}
+            className="absolute inset-0 w-full h-full object-cover"
+            src={previewUrl}
+          />
+        )}
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent" />
+
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-20 left-4 md:left-12 z-10 glass-pill w-9 h-9 rounded-full flex items-center justify-center text-foreground"
+          aria-label="Back"
+        >
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="absolute bottom-[10%] left-4 md:left-12 z-10 max-w-2xl">
-          <h1 className="text-display text-4xl md:text-6xl mb-3">{title.title}</h1>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4 flex-wrap">
-            <span className="text-cinema-gold font-semibold">{title.rating}</span>
-            <span>{title.year}</span>
-            <span>{title.duration}</span>
-            <span>{title.genre}</span>
-            <span>{title.language}</span>
-            {!title.is_free && (
-              <span className="bg-gradient-to-r from-primary to-yellow-500 text-background text-xs font-bold px-2 py-0.5 rounded">
-                UGX {title.price.toLocaleString()}
-              </span>
+
+        <div className="absolute bottom-10 md:bottom-20 left-4 md:left-12 z-10 max-w-2xl">
+          <h1 className="text-display text-3xl md:text-5xl mb-2 leading-tight drop-shadow-lg">{title.title}</h1>
+          {title.description && (
+            <p className="text-sm md:text-base text-foreground/85 mb-4 line-clamp-3 drop-shadow">{title.description}</p>
+          )}
+
+          <div className="flex flex-wrap gap-2 text-xs mb-5">
+            <span className="px-2.5 py-1 rounded-full bg-secondary/80 text-secondary-foreground">{title.year}</span>
+            {title.duration && <span className="px-2.5 py-1 rounded-full bg-secondary/80 text-secondary-foreground">⏱ {title.duration}</span>}
+            {title.genre && <span className="px-2.5 py-1 rounded-full bg-secondary/80 text-secondary-foreground">{title.genre}</span>}
+            {title.vj_narrator && (
+              <span className="px-2.5 py-1 rounded-full bg-primary/20 text-primary font-semibold">🎙 VJ {title.vj_narrator}</span>
             )}
+            {title.row && <span className="px-2.5 py-1 rounded-full bg-secondary/80 text-secondary-foreground">📂 {title.row}</span>}
+            <span className="px-2.5 py-1 rounded-full font-medium bg-primary/20 text-primary">
+              {title.is_free ? "FREE" : "Subscription"}
+            </span>
           </div>
-          <p className="text-foreground/80 mb-6 text-sm md:text-base">{title.description}</p>
+
           <div className="flex gap-3 flex-wrap">
             <button
-              onClick={handleWatch}
-              className="flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded font-semibold hover:bg-foreground/80 transition"
+              onClick={handlePlay}
+              className="flex items-center gap-2 bg-foreground text-background px-6 py-2.5 rounded font-semibold hover:bg-foreground/90 transition"
             >
               <Play className="w-5 h-5 fill-background" />
-              {title.is_free ? "Watch Free" : canWatchFree ? "Watch Free (1 credit)" : `Watch Now – UGX ${title.price.toLocaleString()}`}
+              {title.is_free ? "Watch Free" : isActive ? "Play" : "Subscribe & Watch"}
             </button>
             <button
               onClick={() => inList ? removeFromList(title.id) : addToList(title.id)}
-              className="flex items-center gap-2 bg-secondary/80 text-foreground px-6 py-3 rounded font-semibold hover:bg-secondary transition"
+              className="flex items-center gap-2 bg-secondary/80 text-foreground px-6 py-2.5 rounded font-semibold hover:bg-secondary transition"
             >
               {inList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
               {inList ? "In My List" : "My List"}
@@ -79,18 +132,32 @@ export default function TitleDetail() {
         </div>
       </div>
 
-      {showDepositModal && (
-        <div className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center px-4">
-          <div className="bg-card border border-border rounded-lg p-8 max-w-sm w-full text-center">
-            <h2 className="text-display text-2xl mb-4">Insufficient Balance</h2>
-            <p className="text-muted-foreground mb-6">You need at least UGX {title.price.toLocaleString()} to watch. Deposit minimum 3,000 UGX to continue.</p>
-            <Link to="/wallet" className="bg-primary text-primary-foreground px-6 py-3 rounded font-semibold inline-block hover:bg-primary/90 transition">
-              Deposit Now
-            </Link>
-            <button onClick={() => setShowDepositModal(false)} className="block w-full mt-4 text-muted-foreground text-sm">Cancel</button>
+      {/* Extended details below the hero */}
+      <div className="px-4 md:px-12 py-8 max-w-3xl">
+        {title.description && (
+          <>
+            <div className="flex items-center gap-2 mb-2 text-muted-foreground text-sm">
+              <Info className="w-4 h-4" /> About
+            </div>
+            <p className="text-sm md:text-base text-foreground/90 leading-relaxed">{title.description}</p>
+          </>
+        )}
+
+        {title.cast_members && title.cast_members.length > 0 && (
+          <div className="mt-6">
+            <p className="text-xs text-muted-foreground mb-1">Cast</p>
+            <p className="text-sm text-foreground/90">{title.cast_members.join(", ")}</p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      <SubscribeDialog
+        open={showSubscribe}
+        onClose={() => setShowSubscribe(false)}
+        onActivated={() => navigate(`/player/${title.id}`)}
+        title="Subscribe to watch"
+        subtitle={`Unlock "${title.title}" and every other movie.`}
+      />
     </div>
   );
 }

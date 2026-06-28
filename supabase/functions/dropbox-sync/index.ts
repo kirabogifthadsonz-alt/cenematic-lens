@@ -275,13 +275,51 @@ async function syncFolder(supabase: any, folder: any) {
   return result;
 }
 
+// List folders inside a given Dropbox path (default = root). Returns only sub-folders.
+async function browseFolders(path: string) {
+  const normalized = path === "/" ? "" : path; // Dropbox API uses "" for root, not "/"
+  let cursor: string | null = null;
+  let hasMore = true;
+  const folders: { name: string; path: string }[] = [];
+  while (hasMore) {
+    const page: any = cursor
+      ? await dbx("/files/list_folder/continue", { cursor })
+      : await dbx("/files/list_folder", { path: normalized, recursive: false });
+    for (const e of page.entries) {
+      if (e[".tag"] === "folder") folders.push({ name: e.name, path: e.path_display });
+    }
+    cursor = page.cursor;
+    hasMore = page.has_more;
+  }
+  folders.sort((a, b) => a.name.localeCompare(b.name));
+  return folders;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
     if (!DBX_APP_KEY || !DBX_APP_SECRET || !DBX_REFRESH) throw new Error("Dropbox OAuth secrets not configured");
-    if (!TMDB_TOKEN) throw new Error("TMDB_API_KEY not configured");
 
+    // Parse optional action body
+    let action: string | null = null;
+    let bodyPath = "";
+    if (req.method === "POST") {
+      try {
+        const b = await req.json();
+        action = b?.action ?? null;
+        bodyPath = b?.path ?? "";
+      } catch { /* no body = default sync */ }
+    }
+
+    if (action === "list_folders") {
+      const folders = await browseFolders(bodyPath || "");
+      return new Response(JSON.stringify({ success: true, path: bodyPath || "/", folders }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!TMDB_TOKEN) throw new Error("TMDB_API_KEY not configured");
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
     const { data: folders, error } = await supabase
       .from("dropbox_folders").select("*").eq("enabled", true);

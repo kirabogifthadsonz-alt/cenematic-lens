@@ -11,7 +11,7 @@ import {
 import DropboxFoldersTab from "@/components/admin/DropboxFoldersTab";
 import PendingReviewTab from "@/components/admin/PendingReviewTab";
 import SubscriptionPlansTab from "@/components/admin/SubscriptionPlansTab";
-import PricingTab from "@/components/admin/PricingTab";
+
 import CategoriesTab from "@/components/admin/CategoriesTab";
 import LogoIntroTab from "@/components/admin/LogoIntroTab";
 import MovieRequestsTab from "@/components/admin/MovieRequestsTab";
@@ -52,7 +52,7 @@ const sidebarItems: { key: SidebarTab; label: string; icon: React.ReactNode }[] 
   { key: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
   { key: "transactions", label: "Transactions", icon: <Receipt className="w-4 h-4" /> },
   { key: "referrals", label: "Referrals", icon: <Share2 className="w-4 h-4" /> },
-  { key: "pricing", label: "Pricing", icon: <CreditCard className="w-4 h-4" /> },
+  
   { key: "manage_categories", label: "Categories", icon: <Settings className="w-4 h-4" /> },
   { key: "manage_vjs", label: "VJ Narrators", icon: <Users className="w-4 h-4" /> },
   { key: "manage_rows", label: "Content Rows", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -313,7 +313,7 @@ export default function Admin() {
 
             {/* ─── SUBSCRIPTION PLANS ─── */}
             {tab === "plans" && <SubscriptionPlansTab />}
-            {tab === "pricing" && <PricingTab />}
+            
             {tab === "manage_categories" && <CategoriesTab onUpdate={() => {}} />}
             {tab === "logo_intro" && <LogoIntroTab />}
             {tab === "movie_requests" && <MovieRequestsTab />}
