@@ -102,7 +102,7 @@ export default function DropboxAiWatchPanel({ open, onClose, onComplete }: Props
       setFolderUrl(data.folder_url || "");
       setDefaultRow(data.default_row || "New Release");
       setDefaultCategory(data.default_category || "");
-      setDropboxAccount(data.dropbox_account || "new");
+      setDropboxAccount((data.dropbox_account || "new") as "new" | "old");
     }
   };
 
