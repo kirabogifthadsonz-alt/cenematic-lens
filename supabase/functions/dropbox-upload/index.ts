@@ -51,7 +51,7 @@ async function dbxContent(endpoint: string, arg: unknown, body: Uint8Array | nul
 async function dbxRpc(endpoint: string, body: unknown) {
   const r = await fetch(`https://api.dropboxapi.com/2${endpoint}`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${DROPBOX_TOKEN}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${await getDropboxToken()}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(`Dropbox ${endpoint} ${r.status}: ${await r.text()}`);
