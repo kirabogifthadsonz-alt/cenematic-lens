@@ -61,7 +61,7 @@ export default function ReferralCard() {
     if (!inputCode.trim()) return;
     setApplying(true);
     const { data, error } = await supabase.rpc("apply_referral_code", {
-      _code: inputCode.trim(),
+      code: inputCode.trim(),
     });
     setApplying(false);
     if (error) { toast.error(error.message); return; }

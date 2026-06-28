@@ -30,6 +30,9 @@ interface PendingMovie {
   custom_poster_url: string | null;
   custom_category: string | null;
   preparation_notes: string | null;
+  video_url?: string | null;
+  video_url_720p?: string | null;
+  video_url_480p?: string | null;
   last_edited_at: string;
 }
 
@@ -65,7 +68,7 @@ export default function AdvancedAiWatchPanel({ open, onClose, onComplete }: Prop
         .order("last_edited_at", { ascending: false });
 
       if (error) throw error;
-      setMovies((data || []) as PendingMovie[]);
+      setMovies((data || []) as unknown as PendingMovie[]);
     } catch (err) {
       console.error("Error loading pending movies:", err);
       toast.error("Failed to load pending movies");

@@ -5,7 +5,8 @@ import { useAdmin } from "@/hooks/use-admin";
 import { Tables } from "@/integrations/supabase/types";
 import {
   LayoutDashboard, Film, Users, Receipt, Share2, BarChart3, Settings,
-  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Sparkles, Download, CreditCard,
+  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Download, CreditCard,
+
 } from "lucide-react";
 import DropboxFoldersTab from "@/components/admin/DropboxFoldersTab";
 import PendingReviewTab from "@/components/admin/PendingReviewTab";
@@ -313,7 +314,7 @@ export default function Admin() {
             {/* ─── SUBSCRIPTION PLANS ─── */}
             {tab === "plans" && <SubscriptionPlansTab />}
             {tab === "pricing" && <PricingTab />}
-            {tab === "manage_categories" && <CategoriesTab />}
+            {tab === "manage_categories" && <CategoriesTab onUpdate={() => {}} />}
             {tab === "logo_intro" && <LogoIntroTab />}
             {tab === "movie_requests" && <MovieRequestsTab />}
             {tab === "wallet_promo" && <WalletPromoTab />}
@@ -672,12 +673,12 @@ export default function Admin() {
         </Dialog>
 
         {/* ─── NEW ADMIN MODALS ─── */}
-        {showBulkSeries && <BulkSeriesUpload onClose={() => setShowBulkSeries(false)} />}
-        {showBulkMovieWizard && <BulkMovieWizard onClose={() => setShowBulkMovieWizard(false)} />}
-        {showAiMagic && <AiMagicUpload onClose={() => setShowAiMagic(false)} />}
-        {showDropboxFolder && <DropboxFolderUpload onClose={() => setShowDropboxFolder(false)} />}
-        {showAiWatch && <DropboxAiWatchPanel onClose={() => setShowAiWatch(false)} />}
-        {showAdvancedAiWatch && <AdvancedAiWatchPanel onClose={() => setShowAdvancedAiWatch(false)} />}
+        {showBulkSeries && <BulkSeriesUpload open={showBulkSeries} allSeries={[]} onComplete={() => setShowBulkSeries(false)} onClose={() => setShowBulkSeries(false)} />}
+        {showBulkMovieWizard && <BulkMovieWizard open={showBulkMovieWizard} onComplete={() => setShowBulkMovieWizard(false)} onClose={() => setShowBulkMovieWizard(false)} />}
+        {showAiMagic && <AiMagicUpload open={showAiMagic} onComplete={() => setShowAiMagic(false)} onClose={() => setShowAiMagic(false)} />}
+        {showDropboxFolder && <DropboxFolderUpload open={showDropboxFolder} allSeries={[]} onComplete={() => setShowDropboxFolder(false)} onClose={() => setShowDropboxFolder(false)} />}
+        {showAiWatch && <DropboxAiWatchPanel open={showAiWatch} onComplete={() => setShowAiWatch(false)} onClose={() => setShowAiWatch(false)} />}
+        {showAdvancedAiWatch && <AdvancedAiWatchPanel open={showAdvancedAiWatch} onComplete={() => setShowAdvancedAiWatch(false)} onClose={() => setShowAdvancedAiWatch(false)} />}
 
         {/* ─── DELETE CONFIRMATION ─── */}
         <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

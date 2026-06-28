@@ -31,7 +31,7 @@ export default function Login() {
     const ref = localStorage.getItem("pending_referral_code");
     if (!ref) return;
     try {
-      const { data } = await supabase.rpc("apply_referral_code", { _code: ref });
+      const { data } = await supabase.rpc("apply_referral_code", { code: ref });
       const result = data as { ok: boolean; error?: string } | null;
       if (result?.ok) {
         toast.success("Referral applied! Top up 3,000 UGX to unlock both rewards.");

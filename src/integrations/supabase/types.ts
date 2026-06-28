@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_dashboard_settings: {
+        Row: {
+          displayed_income: number | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          displayed_income?: number | null
+          id: number
+          updated_at?: string
+        }
+        Update: {
+          displayed_income?: number | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      background_music: {
+        Row: {
+          artist: string | null
+          created_at: string
+          file_url: string
+          id: string
+          is_active: boolean | null
+          title: string
+        }
+        Insert: {
+          artist?: string | null
+          created_at?: string
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+        }
+        Update: {
+          artist?: string | null
+          created_at?: string
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string
@@ -53,6 +98,78 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      content_rows: {
+        Row: {
+          created_at: string
+          default_price: number | null
+          display_order: number | null
+          id: string
+          is_series_row: boolean | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          default_price?: number | null
+          display_order?: number | null
+          id?: string
+          is_series_row?: boolean | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          default_price?: number | null
+          display_order?: number | null
+          id?: string
+          is_series_row?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform?: string | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dropbox_folders: {
         Row: {
           created_at: string
@@ -83,6 +200,231 @@ export type Database = {
           last_cursor?: string | null
           last_synced_at?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      dropbox_watch_settings: {
+        Row: {
+          default_category: string | null
+          default_row: string | null
+          dropbox_account: string | null
+          folder_url: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          default_category?: string | null
+          default_row?: string | null
+          dropbox_account?: string | null
+          folder_url?: string | null
+          id: number
+          updated_at?: string
+        }
+        Update: {
+          default_category?: string | null
+          default_row?: string | null
+          dropbox_account?: string | null
+          folder_url?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      logo_intro_settings: {
+        Row: {
+          id: number
+          is_enabled: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          is_enabled?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          is_enabled?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lower_third_ads: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean | null
+          layers: Json | null
+          start_time_seconds: number | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          layers?: Json | null
+          start_time_seconds?: number | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          layers?: Json | null
+          start_time_seconds?: number | null
+          title?: string | null
+        }
+        Relationships: []
+      }
+      marquee_ads: {
+        Row: {
+          background_color: string | null
+          created_at: string
+          font_color: string | null
+          font_family: string | null
+          font_size: string | null
+          id: string
+          is_active: boolean | null
+          speed: number | null
+          text: string
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string
+          font_color?: string | null
+          font_family?: string | null
+          font_size?: string | null
+          id?: string
+          is_active?: boolean | null
+          speed?: number | null
+          text: string
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string
+          font_color?: string | null
+          font_family?: string | null
+          font_size?: string | null
+          id?: string
+          is_active?: boolean | null
+          speed?: number | null
+          text?: string
+        }
+        Relationships: []
+      }
+      movie_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          movie_title: string
+          production_year: number | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          user_notified: boolean | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          movie_title: string
+          production_year?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          user_notified?: boolean | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          movie_title?: string
+          production_year?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          user_notified?: boolean | null
+        }
+        Relationships: []
+      }
+      movies: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          dropbox_account: string | null
+          id: string
+          is_coming_soon: boolean | null
+          is_free: boolean | null
+          is_series: boolean | null
+          part: number | null
+          poster_url: string | null
+          price_ugx: number | null
+          release_date: string | null
+          row: string | null
+          series_id: string | null
+          thumbnail_url: string | null
+          title: string
+          trailer_url: string | null
+          updated_at: string
+          video_url: string | null
+          video_url_480p: string | null
+          video_url_720p: string | null
+          vj: string | null
+          vj_name: string | null
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          dropbox_account?: string | null
+          id?: string
+          is_coming_soon?: boolean | null
+          is_free?: boolean | null
+          is_series?: boolean | null
+          part?: number | null
+          poster_url?: string | null
+          price_ugx?: number | null
+          release_date?: string | null
+          row?: string | null
+          series_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          trailer_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+          video_url_480p?: string | null
+          video_url_720p?: string | null
+          vj?: string | null
+          vj_name?: string | null
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          dropbox_account?: string | null
+          id?: string
+          is_coming_soon?: boolean | null
+          is_free?: boolean | null
+          is_series?: boolean | null
+          part?: number | null
+          poster_url?: string | null
+          price_ugx?: number | null
+          release_date?: string | null
+          row?: string | null
+          series_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          trailer_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+          video_url_480p?: string | null
+          video_url_720p?: string | null
+          vj?: string | null
+          vj_name?: string | null
+          year?: number | null
         }
         Relationships: []
       }
@@ -167,42 +509,360 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_movies: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          dropbox_account: string | null
+          dropbox_file_id: string | null
+          id: string
+          is_finished: boolean | null
+          is_free: boolean | null
+          last_edited_at: string | null
+          movie_title: string | null
+          poster_url: string | null
+          price_ugx: number | null
+          production_year: number | null
+          row: string | null
+          source_path: string | null
+          status: string | null
+          thumbnail_url: string | null
+          title: string | null
+          video_url: string | null
+          video_url_480p: string | null
+          video_url_720p: string | null
+          vj: string | null
+          vj_name: string | null
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          dropbox_account?: string | null
+          dropbox_file_id?: string | null
+          id?: string
+          is_finished?: boolean | null
+          is_free?: boolean | null
+          last_edited_at?: string | null
+          movie_title?: string | null
+          poster_url?: string | null
+          price_ugx?: number | null
+          production_year?: number | null
+          row?: string | null
+          source_path?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_url?: string | null
+          video_url_480p?: string | null
+          video_url_720p?: string | null
+          vj?: string | null
+          vj_name?: string | null
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          dropbox_account?: string | null
+          dropbox_file_id?: string | null
+          id?: string
+          is_finished?: boolean | null
+          is_free?: boolean | null
+          last_edited_at?: string | null
+          movie_title?: string | null
+          poster_url?: string | null
+          price_ugx?: number | null
+          production_year?: number | null
+          row?: string | null
+          source_path?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_url?: string | null
+          video_url_480p?: string | null
+          video_url_720p?: string | null
+          vj?: string | null
+          vj_name?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          display_name: string | null
+          email: string | null
           free_credits: number
+          full_name: string | null
           id: string
           phone: string | null
           referral_code: string | null
           referral_count: number
+          referred_by: string | null
           updated_at: string
           user_id: string
           username: string | null
           wallet: number
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           free_credits?: number
+          full_name?: string | null
           id?: string
           phone?: string | null
           referral_code?: string | null
           referral_count?: number
+          referred_by?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
           wallet?: number
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           free_credits?: number
+          full_name?: string | null
           id?: string
           phone?: string | null
           referral_code?: string | null
           referral_count?: number
+          referred_by?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
           wallet?: number
+        }
+        Relationships: []
+      }
+      purchases: {
+        Row: {
+          created_at: string
+          id: string
+          movie_id: string
+          price: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          movie_id: string
+          price?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          movie_id?: string
+          price?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          created_at: string
+          credits_awarded: number | null
+          id: string
+          referred_id: string | null
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_awarded?: number | null
+          id?: string
+          referred_id?: string | null
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_awarded?: number | null
+          id?: string
+          referred_id?: string | null
+          referrer_id?: string
+        }
+        Relationships: []
+      }
+      series: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          thumbnail_url: string | null
+          title: string
+          vj: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title: string
+          vj?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          vj?: string | null
+        }
+        Relationships: []
+      }
+      squeeze_back_ads: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          fit_bottom: boolean | null
+          fit_left: boolean | null
+          height_percent: number | null
+          id: string
+          image_url: string | null
+          image_url_bottom: string | null
+          interval_minutes: number | null
+          is_enabled: boolean | null
+          link_url: string | null
+          link_url_bottom: string | null
+          title: string | null
+          width_percent: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          fit_bottom?: boolean | null
+          fit_left?: boolean | null
+          height_percent?: number | null
+          id?: string
+          image_url?: string | null
+          image_url_bottom?: string | null
+          interval_minutes?: number | null
+          is_enabled?: boolean | null
+          link_url?: string | null
+          link_url_bottom?: string | null
+          title?: string | null
+          width_percent?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          fit_bottom?: boolean | null
+          fit_left?: boolean | null
+          height_percent?: number | null
+          id?: string
+          image_url?: string | null
+          image_url_bottom?: string | null
+          interval_minutes?: number | null
+          is_enabled?: boolean | null
+          link_url?: string | null
+          link_url_bottom?: string | null
+          title?: string | null
+          width_percent?: number | null
+        }
+        Relationships: []
+      }
+      sub_admin_invites: {
+        Row: {
+          created_at: string
+          email: string | null
+          enabled_features: Json | null
+          id: string
+          token: string | null
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          enabled_features?: Json | null
+          id?: string
+          token?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          enabled_features?: Json | null
+          id?: string
+          token?: string | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      sub_admins: {
+        Row: {
+          created_at: string
+          email: string | null
+          enabled_features: Json | null
+          id: string
+          is_active: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          enabled_features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          enabled_features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      subscription_packages: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          duration_hours: number | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          key: string | null
+          label: string | null
+          name: string | null
+          price_ugx: number | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          duration_hours?: number | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          key?: string | null
+          label?: string | null
+          name?: string | null
+          price_ugx?: number | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          duration_hours?: number | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          key?: string | null
+          label?: string | null
+          name?: string | null
+          price_ugx?: number | null
         }
         Relationships: []
       }
@@ -248,6 +908,36 @@ export type Database = {
           price?: number
           sort_order?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          package_key: string | null
+          source: string | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          package_key?: string | null
+          source?: string | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          package_key?: string | null
+          source?: string | null
+          started_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -405,11 +1095,138 @@ export type Database = {
         }
         Relationships: []
       }
+      vj_list: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          name: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          name: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      wallet_promotions: {
+        Row: {
+          bonus_percent: number | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          link_url: string | null
+          message: string | null
+          min_amount: number | null
+          multiplier: number | null
+          starts_at: string | null
+          title: string | null
+        }
+        Insert: {
+          bonus_percent?: number | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          link_url?: string | null
+          message?: string | null
+          min_amount?: number | null
+          multiplier?: number | null
+          starts_at?: string | null
+          title?: string | null
+        }
+        Update: {
+          bonus_percent?: number | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          link_url?: string | null
+          message?: string | null
+          min_amount?: number | null
+          multiplier?: number | null
+          starts_at?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      watch_progress: {
+        Row: {
+          current_time_seconds: number | null
+          duration_seconds: number | null
+          id: string
+          movie_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_time_seconds?: number | null
+          duration_seconds?: number | null
+          id?: string
+          movie_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_time_seconds?: number | null
+          duration_seconds?: number | null
+          id?: string
+          movie_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      apply_referral_code: { Args: { code: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
