@@ -5,7 +5,8 @@ import { useAdmin } from "@/hooks/use-admin";
 import { Tables } from "@/integrations/supabase/types";
 import {
   LayoutDashboard, Film, Users, Receipt, Share2, BarChart3, Settings,
-  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Sparkles, Download, CreditCard,
+  Plus, Pencil, Trash2, LogOut, Loader2, Menu, Cloud, Download, CreditCard,
+
 } from "lucide-react";
 import DropboxFoldersTab from "@/components/admin/DropboxFoldersTab";
 import PendingReviewTab from "@/components/admin/PendingReviewTab";
