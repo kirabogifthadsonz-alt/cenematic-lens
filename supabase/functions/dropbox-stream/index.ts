@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
     const r = await fetch("https://api.dropboxapi.com/2/files/get_temporary_link", {
       method: "POST",
-      headers: { Authorization: `Bearer ${DROPBOX_TOKEN}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${await getDropboxToken()}`, "Content-Type": "application/json" },
       body: JSON.stringify({ path }),
     });
     if (!r.ok) throw new Error(`Dropbox ${r.status}: ${await r.text()}`);
