@@ -37,7 +37,7 @@ async function dbxContent(endpoint: string, arg: unknown, body: Uint8Array | nul
   const r = await fetch(`https://content.dropboxapi.com/2${endpoint}`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${DROPBOX_TOKEN}`,
+      Authorization: `Bearer ${await getDropboxToken()}`,
       "Dropbox-API-Arg": JSON.stringify(arg),
       "Content-Type": "application/octet-stream",
     },
