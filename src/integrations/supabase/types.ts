@@ -122,20 +122,26 @@ export type Database = {
       content_rows: {
         Row: {
           created_at: string
+          default_price: number | null
           display_order: number | null
           id: string
+          is_series_row: boolean | null
           name: string
         }
         Insert: {
           created_at?: string
+          default_price?: number | null
           display_order?: number | null
           id?: string
+          is_series_row?: boolean | null
           name: string
         }
         Update: {
           created_at?: string
+          default_price?: number | null
           display_order?: number | null
           id?: string
+          is_series_row?: boolean | null
           name?: string
         }
         Relationships: []
@@ -509,17 +515,23 @@ export type Database = {
           created_at: string
           description: string | null
           dropbox_account: string | null
+          dropbox_file_id: string | null
           id: string
           is_finished: boolean | null
           is_free: boolean | null
           last_edited_at: string | null
+          movie_title: string | null
+          poster_url: string | null
           price_ugx: number | null
+          production_year: number | null
           row: string | null
           source_path: string | null
           status: string | null
           thumbnail_url: string | null
           title: string | null
           video_url: string | null
+          video_url_480p: string | null
+          video_url_720p: string | null
           vj: string | null
           vj_name: string | null
           year: number | null
@@ -529,17 +541,23 @@ export type Database = {
           created_at?: string
           description?: string | null
           dropbox_account?: string | null
+          dropbox_file_id?: string | null
           id?: string
           is_finished?: boolean | null
           is_free?: boolean | null
           last_edited_at?: string | null
+          movie_title?: string | null
+          poster_url?: string | null
           price_ugx?: number | null
+          production_year?: number | null
           row?: string | null
           source_path?: string | null
           status?: string | null
           thumbnail_url?: string | null
           title?: string | null
           video_url?: string | null
+          video_url_480p?: string | null
+          video_url_720p?: string | null
           vj?: string | null
           vj_name?: string | null
           year?: number | null
@@ -549,17 +567,23 @@ export type Database = {
           created_at?: string
           description?: string | null
           dropbox_account?: string | null
+          dropbox_file_id?: string | null
           id?: string
           is_finished?: boolean | null
           is_free?: boolean | null
           last_edited_at?: string | null
+          movie_title?: string | null
+          poster_url?: string | null
           price_ugx?: number | null
+          production_year?: number | null
           row?: string | null
           source_path?: string | null
           status?: string | null
           thumbnail_url?: string | null
           title?: string | null
           video_url?: string | null
+          video_url_480p?: string | null
+          video_url_720p?: string | null
           vj?: string | null
           vj_name?: string | null
           year?: number | null
@@ -568,36 +592,51 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          display_name: string | null
+          email: string | null
           free_credits: number
+          full_name: string | null
           id: string
           phone: string | null
           referral_code: string | null
           referral_count: number
+          referred_by: string | null
           updated_at: string
           user_id: string
           username: string | null
           wallet: number
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           free_credits?: number
+          full_name?: string | null
           id?: string
           phone?: string | null
           referral_code?: string | null
           referral_count?: number
+          referred_by?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
           wallet?: number
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           free_credits?: number
+          full_name?: string | null
           id?: string
           phone?: string | null
           referral_code?: string | null
           referral_count?: number
+          referred_by?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
@@ -792,30 +831,36 @@ export type Database = {
         Row: {
           created_at: string
           display_order: number | null
+          duration_hours: number | null
           duration_minutes: number | null
           id: string
           is_active: boolean | null
           key: string | null
+          label: string | null
           name: string | null
           price_ugx: number | null
         }
         Insert: {
           created_at?: string
           display_order?: number | null
+          duration_hours?: number | null
           duration_minutes?: number | null
           id?: string
           is_active?: boolean | null
           key?: string | null
+          label?: string | null
           name?: string | null
           price_ugx?: number | null
         }
         Update: {
           created_at?: string
           display_order?: number | null
+          duration_hours?: number | null
           duration_minutes?: number | null
           id?: string
           is_active?: boolean | null
           key?: string | null
+          label?: string | null
           name?: string | null
           price_ugx?: number | null
         }
@@ -1080,10 +1125,14 @@ export type Database = {
           created_at: string
           description: string | null
           ends_at: string | null
+          expires_at: string | null
           id: string
           image_url: string | null
           is_active: boolean | null
           link_url: string | null
+          message: string | null
+          min_amount: number | null
+          multiplier: number | null
           starts_at: string | null
           title: string | null
         }
@@ -1092,10 +1141,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           ends_at?: string | null
+          expires_at?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           link_url?: string | null
+          message?: string | null
+          min_amount?: number | null
+          multiplier?: number | null
           starts_at?: string | null
           title?: string | null
         }
@@ -1104,10 +1157,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           ends_at?: string | null
+          expires_at?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           link_url?: string | null
+          message?: string | null
+          min_amount?: number | null
+          multiplier?: number | null
           starts_at?: string | null
           title?: string | null
         }
@@ -1169,6 +1226,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_referral_code: { Args: { code: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
