@@ -68,7 +68,7 @@ export default function AdvancedAiWatchPanel({ open, onClose, onComplete }: Prop
         .order("last_edited_at", { ascending: false });
 
       if (error) throw error;
-      setMovies((data || []) as PendingMovie[]);
+      setMovies((data || []) as unknown as PendingMovie[]);
     } catch (err) {
       console.error("Error loading pending movies:", err);
       toast.error("Failed to load pending movies");
