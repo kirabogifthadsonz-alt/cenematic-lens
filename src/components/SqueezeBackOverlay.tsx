@@ -38,7 +38,7 @@ export default function SqueezeBackOverlay({ currentTime, isPlaying, onSqueezeAc
         .select("id, image_url, link_url, image_url_bottom, link_url_bottom, title, interval_minutes, duration_seconds, width_percent, height_percent, fit_left, fit_bottom")
         .eq("is_enabled", true)
         .order("created_at", { ascending: false });
-      setAds((data as SqueezeBackAd[]) || []);
+      setAds((data as unknown as SqueezeBackAd[]) || []);
     };
     fetchAds();
   }, []);
