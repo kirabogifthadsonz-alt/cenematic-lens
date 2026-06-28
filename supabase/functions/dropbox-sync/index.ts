@@ -57,9 +57,10 @@ function parseFilename(filename: string): { title: string; vj: string } {
 
 // --- Dropbox API ---
 async function dbx(endpoint: string, body: unknown) {
+  const token = await getDropboxToken();
   const r = await fetch(`https://api.dropboxapi.com/2${endpoint}`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${DROPBOX_TOKEN}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(`Dropbox ${endpoint} failed ${r.status}: ${await r.text()}`);
