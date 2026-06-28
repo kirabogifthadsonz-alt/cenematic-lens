@@ -8,7 +8,24 @@ const corsHeaders = {
   "Access-Control-Expose-Headers": "content-type",
 };
 
-const DROPBOX_TOKEN = Deno.env.get("DROPBOX_ACCESS_TOKEN")!;
+const DBX_APP_KEY = Deno.env.get("DROPBOX_APP_KEY")!;
+const DBX_APP_SECRET = Deno.env.get("DROPBOX_APP_SECRET")!;
+const DBX_REFRESH = Deno.env.get("DROPBOX_APP_REFRESH_TOKEN")!;
+
+let _cachedToken: { token: string; expiresAt: number } | null = null;
+async function getDropboxToken(): Promise<string> {
+  if (_cachedToken && _cachedToken.expiresAt > Date.now() + 60_000) return _cachedToken.token;
+  const basic = btoa(`${DBX_APP_KEY}:${DBX_APP_SECRET}`);
+  const r = await fetch("https://api.dropboxapi.com/oauth2/token", {
+    method: "POST",
+    headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: DBX_REFRESH }),
+  });
+  if (!r.ok) throw new Error(`Dropbox token refresh ${r.status}: ${await r.text()}`);
+  const j = await r.json();
+  _cachedToken = { token: j.access_token, expiresAt: Date.now() + (j.expires_in ?? 14400) * 1000 };
+  return _cachedToken.token;
+}
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
